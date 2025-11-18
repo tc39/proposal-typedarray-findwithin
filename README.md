@@ -1,50 +1,53 @@
-# template-for-proposals
+# TypedArray Find Within
 
-A repository template for ECMAScript proposals.
+ECMAScript Proposal for searching for subsequences within TypedArrays
 
-## Before creating a proposal
+This proposal is currently [stage 1](https://github.com/tc39/proposals/blob/master/README.md) of the [process](https://tc39.github.io/process-document/).
 
-Please ensure the following:
-  1. You have read the [process document](https://tc39.github.io/process-document/)
-  1. You have reviewed the [existing proposals](https://github.com/tc39/proposals/)
-  1. You are aware that your proposal requires being a member of TC39, or locating a TC39 delegate to “champion” your proposal
+## Problem
 
-## Create your proposal repo
+ECMAScript should provide a native indexOf-type method for TypedArrays that searches for subsequences of elements.
 
-Follow these steps:
-  1. Click the green [“use this template”](https://github.com/tc39/template-for-proposals/generate) button in the repo header. (Note: Do not fork this repo in GitHub's web interface, as that will later prevent transfer into the TC39 organization)
-  1. Update ecmarkup and the biblio to the latest version: `npm install --save-dev ecmarkup@latest && npm install --save-dev --save-exact @tc39/ecma262-biblio@latest`.
-  1. Go to your repo settings page:
-      1. Under “General”, under “Features”, ensure “Issues” is checked, and disable “Wiki”, and “Projects” (unless you intend to use Projects)
-      1. Under “Pull Requests”, check “Always suggest updating pull request branches” and “automatically delete head branches”
-      1. Under the “Pages” section on the left sidebar, and set the source to “deploy from a branch”, select “gh-pages” in the branch dropdown, and then ensure that “Enforce HTTPS” is checked.
-      1. Under the “Actions” section on the left sidebar, under “General”, select “Read and write permissions” under “Workflow permissions” and click “Save”
-  1. [“How to write a good explainer”][explainer] explains how to make a good first impression.
+Today with TypedArrays, it is possible to get the index of a specific single element but there is no mechanism to efficiently locate a sequence of elements. Subsequence searches have been common in server-side applications like Node.js for quite some time via the `Buffer` object's override of the `Uint8Array.prototype.indexOf` method, but this is not supported in general for TypedArrays on the Web, which has forced applications to implement slow alternatives that typically rely on non-optimized linear searches of the array.
 
-      > Each TC39 proposal should have a `README.md` file which explains the purpose
-      > of the proposal and its shape at a high level.
-      >
-      > ...
-      >
-      > The rest of this page can be used as a template ...
+```js
+function findSubsequence(haystack, needle) {
+  if (needle.length === 0) return 0;
+  if (needle.length > haystack.length) return -1;
+  
+  outer: for (let i = 0; i <= haystack.length - needle.length; i++) {
+    for (let j = 0; j < needle.length; j++) {
+      if (haystack[i + j] !== needle[j]) continue outer;
+    }
+    return i;
+  }
+  return -1;
+}
 
-      Your explainer can point readers to the `index.html` generated from `spec.emu`
-      via markdown like
+// Works with any TypedArray
+const uint8 = new Uint8Array([1, 2, 3, 4, 5]);
+const int16 = new Int16Array([1, 2, 3, 4, 5]);
+console.log(findSubsequence(uint8, new Uint8Array([3, 4]))); // 2
+console.log(findSubsequence(int16, new Int16Array([3, 4]))); // 2
+```
 
-      ```markdown
-      You can browse the [ecmarkup output](https://ACCOUNT.github.io/PROJECT/)
-      or browse the [source](https://github.com/ACCOUNT/PROJECT/blob/HEAD/spec.emu).
-      ```
+## The Proposal
 
-      where *ACCOUNT* and *PROJECT* are the first two path elements in your project's Github URL.
-      For example, for github.com/**tc39**/**template-for-proposals**, *ACCOUNT* is “tc39”
-      and *PROJECT* is “template-for-proposals”.
+The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in two forms: one that returns the starting index of that sequence, and another that returns a simple boolean true/false if the subsequence exists.
 
+```js
+const enc = new TextEncoder();
+const u8 = enc.encode('Hello TC39');
+console.log(u8.find(enc.encode('TC39'))); // 6
+console.log(u8.contains(enc.encode('TC39'))); // true
+```
 
-## Maintain your proposal repo
+Exactly how to implement the subsequence search algorithm is intended to be left as an implementation specific detail. The key caveat is that the `needle` (the subsequence being searched for) must be of the same element-type as the `haystack` (the `TypedArray` that is being searched).
 
-  1. Make your changes to `spec.emu` (ecmarkup uses HTML syntax, but is not HTML, so I strongly suggest not naming it “.html”)
-  1. Any commit that makes meaningful changes to the spec, should run `npm run build` to verify that the build will succeed and the output looks as expected.
-  1. Whenever you update `ecmarkup`, run `npm run build` to verify that the build will succeed and the output looks as expected.
+## Why just `TypedArray`? Why not all `Iterables`
 
-  [explainer]: https://github.com/tc39/how-we-work/blob/HEAD/explainer.md
+This proposal could generally address the same problem of searching for subsequences within any iterable. That's something the committee should decide. There are a few issues there however:
+
+* It will be easier to optimize the performance of searching for the `needle` in the `haystack` `TypedArray` specifically than it will be dealing with the iterable protocol in general. While it might make sense for this proposal to tackle iterables, there are a different set of performance and optimization path considerations in that approach.
+* TypedArrays are homogenous in their member elements, as are strings. However, other types of iterables may yield any variety of types. While it is most common for iterables to always yield the same type of value, they are not required to do so. This also makes it difficult to optimize for the general case.
+
