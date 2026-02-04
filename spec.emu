@@ -4,36 +4,84 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: Proposal Title Goes Here
-stage: -1
-contributors: Your Name(s) Here
+title: TypedArray.prototype.search / searchLast / contains
+stage: 1
+contributors: James M Snell
 </pre>
 
-<emu-clause id="sec-demo-clause">
-  <h1>This is an emu-clause</h1>
-  <p>This is an algorithm:</p>
-  <emu-alg>
-    1. Let _proposal_ be *undefined*.
-    1. If IsAccepted(_proposal_) is *true*, then
-      1. Let _stage_ be *0*<sub>ℤ</sub>.
-    1. Else,
-      1. Let _stage_ be *-1*<sub>ℤ</sub>.
-    1. Return ? ToString(_stage_).
-  </emu-alg>
-</emu-clause>
+<emu-clause id="sec-typedarray-objects">
+  <h1>TypedArray Objects</h1>
 
-<emu-clause id="sec-is-accepted" type="abstract operation">
-  <h1>
-      IsAccepted (
-        _proposal_: an ECMAScript language value
-      ): a Boolean
-  </h1>
-  <dl class="header">
-    <dt>description</dt>
-    <dd>Tells you if the proposal was accepted</dd>
-  </dl>
-  <emu-alg>
-    1. If _proposal_ is not a String, or is not accepted, return *false*.
-    1. Return *true*.
-  </emu-alg>
+  <emu-clause id="sec-%typedarray%-intrinsic-object">
+    <h1>The %TypedArray% Intrinsic Object</h1>
+
+    <emu-clause id="sec-properties-of-the-%typedarrayprototype%-object">
+      <h1>Properties of the %TypedArray% Prototype Object</h1>
+
+      <emu-clause id="sec-%typedarray%.prototype.search">
+        <h1>%TypedArray%.prototype.search ( _needle_ )</h1>
+        <p>This method searches for the first occurrence of the subsequence _needle_ within this TypedArray. It performs the following steps when called:</p>
+        <emu-alg>
+          1. Let _O_ be the *this* value.
+          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
+          1. Let _needleRecord_ be ? ValidateTypedArray(_needle_, ~seq-cst~).
+          1. If TypedArrayElementType(_O_) is not TypedArrayElementType(_needle_), throw a *TypeError* exception.
+          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
+          1. Let _needleLength_ be TypedArrayLength(_needleRecord_).
+          1. If _needleLength_ is 0, return *+0*<sub>𝔽</sub>.
+          1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
+          1. Let _index_ be the smallest non-negative integer _k_ such that the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+          1. Return _index_.
+        </emu-alg>
+        <emu-note>
+          <p>This method requires that _needle_ be a TypedArray of the same type as the *this* value. For example, if *this* is a `Uint8Array`, then _needle_ must also be a `Uint8Array`.</p>
+          <p>Two subsequences are <dfn>SameValueZero-equal</dfn> if they have the same length and for each index, the corresponding elements are equal according to the SameValueZero algorithm. This means that for floating-point TypedArrays (Float32Array, Float64Array, Float16Array), *NaN* values are considered equal to each other regardless of their bit patterns, and *+0*<sub>𝔽</sub> is considered equal to *-0*<sub>𝔽</sub>.</p>
+          <p>Implementations may use any technique to search for the subsequence, such as naive search, Boyer-Moore, or other string matching algorithms, provided the observable result is the index of the first occurrence of the subsequence or *-1*<sub>𝔽</sub> if not found.</p>
+        </emu-note>
+      </emu-clause>
+
+      <emu-clause id="sec-%typedarray%.prototype.searchlast">
+        <h1>%TypedArray%.prototype.searchLast ( _needle_ )</h1>
+        <p>This method searches for the last occurrence of the subsequence _needle_ within this TypedArray. It performs the following steps when called:</p>
+        <emu-alg>
+          1. Let _O_ be the *this* value.
+          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
+          1. Let _needleRecord_ be ? ValidateTypedArray(_needle_, ~seq-cst~).
+          1. If TypedArrayElementType(_O_) is not TypedArrayElementType(_needle_), throw a *TypeError* exception.
+          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
+          1. Let _needleLength_ be TypedArrayLength(_needleRecord_).
+          1. If _needleLength_ is 0, return 𝔽(_haystackLength_).
+          1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
+          1. Let _index_ be the largest non-negative integer _k_ such that _k_ + _needleLength_ ≤ _haystackLength_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+          1. Return _index_.
+        </emu-alg>
+        <emu-note>
+          <p>This method requires that _needle_ be a TypedArray of the same type as the *this* value. For example, if *this* is a `Uint8Array`, then _needle_ must also be a `Uint8Array`.</p>
+          <p>Two subsequences are SameValueZero-equal if they have the same length and for each index, the corresponding elements are equal according to the SameValueZero algorithm. This means that for floating-point TypedArrays (Float32Array, Float64Array, Float16Array), *NaN* values are considered equal to each other regardless of their bit patterns, and *+0*<sub>𝔽</sub> is considered equal to *-0*<sub>𝔽</sub>.</p>
+          <p>Implementations may use any technique to search for the subsequence, such as naive search, Boyer-Moore, or other string matching algorithms, provided the observable result is the index of the last occurrence of the subsequence or *-1*<sub>𝔽</sub> if not found.</p>
+        </emu-note>
+      </emu-clause>
+
+      <emu-clause id="sec-%typedarray%.prototype.contains">
+        <h1>%TypedArray%.prototype.contains ( _needle_ )</h1>
+        <p>This method determines whether the subsequence _needle_ exists within this TypedArray. It performs the following steps when called:</p>
+        <emu-alg>
+          1. Let _O_ be the *this* value.
+          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
+          1. Let _needleRecord_ be ? ValidateTypedArray(_needle_, ~seq-cst~).
+          1. If TypedArrayElementType(_O_) is not TypedArrayElementType(_needle_), throw a *TypeError* exception.
+          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
+          1. Let _needleLength_ be TypedArrayLength(_needleRecord_).
+          1. If _needleLength_ is 0, return *true*.
+          1. If _needleLength_ &gt; _haystackLength_, return *false*.
+          1. Return *true* if there exists a non-negative integer _k_ such that _k_ + _needleLength_ ≤ _haystackLength_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_; otherwise return *false*.
+        </emu-alg>
+        <emu-note>
+          <p>This method requires that _needle_ be a TypedArray of the same type as the *this* value. For example, if *this* is a `Uint8Array`, then _needle_ must also be a `Uint8Array`.</p>
+          <p>Two subsequences are SameValueZero-equal if they have the same length and for each index, the corresponding elements are equal according to the SameValueZero algorithm. This means that for floating-point TypedArrays (Float32Array, Float64Array, Float16Array), *NaN* values are considered equal to each other regardless of their bit patterns, and *+0*<sub>𝔽</sub> is considered equal to *-0*<sub>𝔽</sub>.</p>
+          <p>Implementations may use any technique to search for the subsequence, such as naive search, Boyer-Moore, or other string matching algorithms, provided the observable result correctly indicates whether the subsequence exists.</p>
+        </emu-note>
+      </emu-clause>
+    </emu-clause>
+  </emu-clause>
 </emu-clause>
