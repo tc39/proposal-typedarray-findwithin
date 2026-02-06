@@ -33,14 +33,18 @@ console.log(findSubsequence(int16, new Int16Array([3, 4]))); // 2
 
 ## The Proposal
 
-The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in three forms: `search` returns the starting index of the first occurrence, `searchLast` returns the starting index of the last occurrence, and `contains` returns a simple boolean true/false if the subsequence exists.
+The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in three forms: `search` returns the starting index of the first occurrence, `searchLast` returns the starting index of the last occurrence, and `contains` returns a simple boolean true/false if the subsequence exists. All three methods accept an optional `offset` parameter to control where the search begins.
 
 ```js
 const enc = new TextEncoder();
-const u8 = enc.encode('Hello TC39');
+const u8 = enc.encode('Hello TC39, Hello TC39');
+
 console.log(u8.search(enc.encode('TC39'))); // 6
-console.log(u8.searchLast(enc.encode('TC39'))); // 6
+console.log(u8.search(enc.encode('TC39'), 7)); // 17
+console.log(u8.searchLast(enc.encode('TC39'))); // 17
+console.log(u8.searchLast(enc.encode('TC39'), 16)); // 6
 console.log(u8.contains(enc.encode('TC39'))); // true
+console.log(u8.contains(enc.encode('TC39'), 18)); // false
 ```
 
 Exactly how to implement the subsequence search algorithm is intended to be left as an implementation specific detail. The key caveat is that the `needle` (the subsequence being searched for) must be of the same element-type as the `haystack` (the `TypedArray` that is being searched).

@@ -18,17 +18,38 @@ contributors: James M Snell
     <emu-clause id="sec-abstract-operations-for-typedarray-objects">
       <h1>Abstract Operations for TypedArray Objects</h1>
 
+      <emu-clause id="sec-validateintegralnumberoffset" type="abstract operation">
+        <h1>
+          ValidateIntegralNumberOffset (
+            _value_: an ECMAScript language value,
+            _default_: an integer,
+          ): either a normal completion containing an integer or a throw completion
+        </h1>
+        <dl class="header">
+          <dt>description</dt>
+          <dd>It validates that _value_ is either *undefined* or an integral Number, returning the corresponding mathematical integer. If _value_ is *undefined*, the _default_ is returned.</dd>
+        </dl>
+        <emu-alg>
+          1. If _value_ is *undefined*, return _default_.
+          1. If _value_ is not a Number, throw a *TypeError* exception.
+          1. If _value_ is *NaN*, throw a *RangeError* exception.
+          1. If IsIntegralNumber(_value_) is *false*, throw a *RangeError* exception.
+          1. Return ℝ(_value_).
+        </emu-alg>
+      </emu-clause>
+
       <emu-clause id="sec-typedarraysearchsubsequence" type="abstract operation">
         <h1>
           TypedArraySearchSubsequence (
             _O_: a TypedArray,
             _needle_: a TypedArray,
             _direction_: ~first~ or ~last~,
+            _offset_: a non-negative integer,
           ): either a normal completion containing an integral Number or a throw completion
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It searches for an occurrence of the subsequence _needle_ within _O_, returning the index of the match or *-1*<sub>𝔽</sub> if not found. The _direction_ parameter controls whether the first or last match is returned.</dd>
+          <dd>It searches for an occurrence of the subsequence _needle_ within _O_ starting from _offset_, returning the index of the match or *-1*<sub>𝔽</sub> if not found. The _direction_ parameter controls whether the first or last match is returned. When _direction_ is ~first~, _offset_ is the index at which to begin searching forward. When _direction_ is ~last~, _offset_ is the index at which to begin searching backward (i.e., the last position at which a match may start).</dd>
         </dl>
         <emu-alg>
           1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
@@ -37,11 +58,11 @@ contributors: James M Snell
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
           1. Let _needleLength_ be TypedArrayLength(_needleRecord_).
           1. If _needleLength_ is 0, then
-            1. If _direction_ is ~first~, return *+0*<sub>𝔽</sub>.
-            1. Else, return 𝔽(_haystackLength_).
+            1. If _direction_ is ~first~, return 𝔽(_offset_).
+            1. Else, return 𝔽(min(_offset_, _haystackLength_)).
           1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-          1. <emu-meta effects="user-code">If _direction_ is ~first~, let _index_ be the smallest non-negative integer _k_ such that the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.</emu-meta>
-          1. Else, let _index_ be the largest non-negative integer _k_ such that _k_ + _needleLength_ ≤ _haystackLength_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+          1. <emu-meta effects="user-code">If _direction_ is ~first~, let _index_ be the smallest integer _k_ such that _k_ ≥ _offset_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.</emu-meta>
+          1. Else, let _index_ be the largest integer _k_ such that _k_ ≤ _offset_ and _k_ + _needleLength_ ≤ _haystackLength_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
           1. Return _index_.
         </emu-alg>
         <emu-note type="editor">
@@ -59,32 +80,43 @@ contributors: James M Snell
       <h1>Properties of the %TypedArray% Prototype Object</h1>
 
       <emu-clause id="sec-%typedarray%.prototype.search">
-        <h1>%TypedArray%.prototype.search ( _needle_ )</h1>
-        <p>This method searches for the first occurrence of the subsequence _needle_ within this TypedArray. It performs the following steps when called:</p>
+        <h1>%TypedArray%.prototype.search ( _needle_ [ , _offset_ ] )</h1>
+        <p>This method searches for the first occurrence of the subsequence _needle_ within this TypedArray, starting at position _offset_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _O_ be the *this* value.
-          1. Return ? TypedArraySearchSubsequence(_O_, _needle_, ~first~).
+          1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, 0).
+          1. Let _startFrom_ be max(_n_, 0).
+          1. Return ? TypedArraySearchSubsequence(_O_, _needle_, ~first~, _startFrom_).
         </emu-alg>
       </emu-clause>
 
       <emu-clause id="sec-%typedarray%.prototype.searchlast">
-        <h1>%TypedArray%.prototype.searchLast ( _needle_ )</h1>
-        <p>This method searches for the last occurrence of the subsequence _needle_ within this TypedArray. It performs the following steps when called:</p>
+        <h1>%TypedArray%.prototype.searchLast ( _needle_ [ , _offset_ ] )</h1>
+        <p>This method searches for the last occurrence of the subsequence _needle_ within this TypedArray, searching backward starting at position _offset_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _O_ be the *this* value.
-          1. Return ? TypedArraySearchSubsequence(_O_, _needle_, ~last~).
+          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
+          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
+          1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, _haystackLength_ - 1).
+          1. Let _startFrom_ be min(max(_n_, 0), _haystackLength_ - 1).
+          1. Return ? TypedArraySearchSubsequence(_O_, _needle_, ~last~, _startFrom_).
         </emu-alg>
       </emu-clause>
 
       <emu-clause id="sec-%typedarray%.prototype.contains">
-        <h1>%TypedArray%.prototype.contains ( _needle_ )</h1>
-        <p>This method determines whether the subsequence _needle_ exists within this TypedArray. It performs the following steps when called:</p>
+        <h1>%TypedArray%.prototype.contains ( _needle_ [ , _offset_ ] )</h1>
+        <p>This method determines whether the subsequence _needle_ exists within this TypedArray, starting the search at position _offset_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _O_ be the *this* value.
-          1. Let _index_ be ? TypedArraySearchSubsequence(_O_, _needle_, ~first~).
+          1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, 0).
+          1. Let _startFrom_ be max(_n_, 0).
+          1. Let _index_ be ? TypedArraySearchSubsequence(_O_, _needle_, ~first~, _startFrom_).
           1. If _index_ is *-1*<sub>𝔽</sub>, return *false*.
           1. Return *true*.
         </emu-alg>
+        <emu-note type="editor">
+          <p>Whether `contains` should exist as a separate method or whether users should simply use `search(_needle_) !== -1` is an open question. See <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/6">issue #6</a> for discussion.</p>
+        </emu-note>
       </emu-clause>
     </emu-clause>
   </emu-clause>
