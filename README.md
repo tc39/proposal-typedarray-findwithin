@@ -77,6 +77,24 @@ u8.search('hello'); // TypeError
 u8.search(42); // TypeError
 ```
 
+### Cross-type floating-point precision
+
+When a needle TypedArray has a narrower floating-point type than the haystack, precision loss during the round-trip through the narrower type can cause matches to fail. Needle elements are read back as JavaScript Numbers via `@@iterator`, and a value that was rounded when stored in a `Float32Array` will not SameValueZero-match the higher-precision representation in a `Float64Array`.
+
+```js
+const f64 = new Float64Array([0.3]);
+
+// Float32 cannot represent 0.3 exactly — it rounds to ≈0.30000001192092896
+f64.search(new Float32Array([0.3]));  // -1 (no match)
+
+// Values that are exact in Float32 (integers, powers of two, etc.) work fine
+const f64b = new Float64Array([0.25, 0.5, 42]);
+f64b.search(new Float32Array([0.25]));  // 0
+f64b.search(new Float32Array([42]));    // 2
+```
+
+This is not specific to this proposal — it is an inherent property of IEEE 754 floating-point arithmetic and applies equally to any cross-type element comparison.
+
 ## Why just `TypedArray`? Why not all `Iterables`
 
 This proposal could generally address the same problem of searching for subsequences within any iterable. That's something the committee should decide. There are a few issues there however:
