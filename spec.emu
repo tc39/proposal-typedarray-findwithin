@@ -93,26 +93,25 @@ contributors: James M Snell
         <h1>
           TypedArraySearchSubsequence (
             _O_: a TypedArray,
+            _haystackLength_: a non-negative integer,
             _needle_: either a TypedArray, a List of Numbers, or a List of BigInts,
             _direction_: ~first~ or ~last~,
-            _offset_: a non-negative integer,
-          ): either a normal completion containing an integral Number or a throw completion
+            _position_: a non-negative integer,
+          ): an integral Number
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It searches for an occurrence of the subsequence _needle_ within _O_ starting from _offset_, returning the index of the match or *-1*<sub>𝔽</sub> if not found. The _direction_ parameter controls whether the first or last match is returned. When _direction_ is ~first~, _offset_ is the index at which to begin searching forward. When _direction_ is ~last~, _offset_ is the index at which to begin searching backward (i.e., the last position at which a match may start).</dd>
+          <dd>It searches for an occurrence of the subsequence _needle_ within the first _haystackLength_ elements of _O_, returning the starting index of the match or *-1*<sub>𝔽</sub> if not found. The _direction_ parameter controls whether the first or last match is returned. When _direction_ is ~first~, only matches starting at index _position_ or later are considered. When _direction_ is ~last~, only matches starting at index _position_ or earlier are considered.</dd>
         </dl>
         <emu-alg>
-          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
           1. Let _needleLength_ be the number of elements in _needle_.
-          1. If _needleLength_ is 0, then
-            1. If _direction_ is ~first~, return 𝔽(_offset_).
-            1. Else, return 𝔽(min(_offset_, _haystackLength_)).
-          1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-          1. [id="step-search-first"] If _direction_ is ~first~, let _index_ be the smallest integer _k_ such that _k_ ≥ _offset_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
-          1. [id="step-search-last"] Else, let _index_ be the largest integer _k_ such that _k_ ≤ _offset_ and _k_ + _needleLength_ ≤ _haystackLength_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
-          1. Return _index_.
+          1. If _needleLength_ is 0, return 𝔽(_position_).
+          1. If _direction_ is ~first~, then
+            1. If _position_ + _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
+            1. [id="step-search-first"] Return the smallest integer _k_ such that _k_ ≥ _position_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+          1. Else,
+            1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
+            1. [id="step-search-last"] Return the largest integer _k_ such that _k_ ≤ _position_ and _k_ + _needleLength_ ≤ _haystackLength_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
         </emu-alg>
         <emu-note type="editor">
           <p>The description of the subsequence search in <emu-xref href="#step-search-first"></emu-xref> and <emu-xref href="#step-search-last"></emu-xref> is intentionally high-level, allowing implementations freedom in how the search is performed. A question for committee is whether these steps need to be specified more precisely with explicit algorithmic substeps (e.g., element-by-element comparison with specific iteration order), even if implementations are expected to use optimized approaches such as Boyer-Moore or other string matching algorithms.</p>
@@ -129,42 +128,44 @@ contributors: James M Snell
       <h1>Properties of the %TypedArray% Prototype Object</h1>
 
       <emu-clause id="sec-%typedarray%.prototype.search">
-        <h1>%TypedArray%.prototype.search ( _needle_ [ , _offset_ ] )</h1>
-        <p>This method searches for the first occurrence of the subsequence _needle_ within this TypedArray, starting at position _offset_. It performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. Perform ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _coerced_ be ? CoerceToCompatibleTypedArrayElementList(_O_, _needle_).
-          1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, 0).
-          1. Let _startFrom_ be max(_n_, 0).
-          1. Return ? TypedArraySearchSubsequence(_O_, _coerced_, ~first~, _startFrom_).
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-%typedarray%.prototype.searchlast">
-        <h1>%TypedArray%.prototype.searchLast ( _needle_ [ , _offset_ ] )</h1>
-        <p>This method searches for the last occurrence of the subsequence _needle_ within this TypedArray, searching backward starting at position _offset_. It performs the following steps when called:</p>
+        <h1>%TypedArray%.prototype.search ( _needle_ [ , _position_ ] )</h1>
+        <p>This method searches for the first occurrence of the subsequence _needle_ within this TypedArray, starting the search at index _position_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _O_ be the *this* value.
           1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
           1. Let _coerced_ be ? CoerceToCompatibleTypedArrayElementList(_O_, _needle_).
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
-          1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, _haystackLength_ - 1).
+          1. Let _n_ be ? ValidateIntegralNumberOffset(_position_, 0).
+          1. Let _startFrom_ be the result of clamping _n_ between 0 and _haystackLength_.
+          1. Return TypedArraySearchSubsequence(_O_, _haystackLength_, _coerced_, ~first~, _startFrom_).
+        </emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-%typedarray%.prototype.searchlast">
+        <h1>%TypedArray%.prototype.searchLast ( _needle_ [ , _position_ ] )</h1>
+        <p>This method searches for the last occurrence of the subsequence _needle_ within this TypedArray whose starting index is at or before _position_. It performs the following steps when called:</p>
+        <emu-alg>
+          1. Let _O_ be the *this* value.
+          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
+          1. Let _coerced_ be ? CoerceToCompatibleTypedArrayElementList(_O_, _needle_).
+          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
+          1. Let _n_ be ? ValidateIntegralNumberOffset(_position_, _haystackLength_ - 1).
           1. Let _startFrom_ be the result of clamping _n_ between 0 and _haystackLength_ - 1.
-          1. Return ? TypedArraySearchSubsequence(_O_, _coerced_, ~last~, _startFrom_).
+          1. Return TypedArraySearchSubsequence(_O_, _haystackLength_, _coerced_, ~last~, _startFrom_).
         </emu-alg>
       </emu-clause>
 
       <emu-clause id="sec-%typedarray%.prototype.contains">
-        <h1>%TypedArray%.prototype.contains ( _needle_ [ , _offset_ ] )</h1>
-        <p>This method determines whether the subsequence _needle_ exists within this TypedArray, starting the search at position _offset_. It performs the following steps when called:</p>
+        <h1>%TypedArray%.prototype.contains ( _needle_ [ , _position_ ] )</h1>
+        <p>This method determines whether the subsequence _needle_ exists within this TypedArray, starting the search at index _position_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _O_ be the *this* value.
-          1. Perform ? ValidateTypedArray(_O_, ~seq-cst~).
+          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
           1. Let _coerced_ be ? CoerceToCompatibleTypedArrayElementList(_O_, _needle_).
-          1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, 0).
-          1. Let _startFrom_ be max(_n_, 0).
-          1. Let _index_ be ? TypedArraySearchSubsequence(_O_, _coerced_, ~first~, _startFrom_).
+          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
+          1. Let _n_ be ? ValidateIntegralNumberOffset(_position_, 0).
+          1. Let _startFrom_ be the result of clamping _n_ between 0 and _haystackLength_.
+          1. Let _index_ be TypedArraySearchSubsequence(_O_, _haystackLength_, _coerced_, ~first~, _startFrom_).
           1. If _index_ is *-1*<sub>𝔽</sub>, return *false*.
           1. Return *true*.
         </emu-alg>

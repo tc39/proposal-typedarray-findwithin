@@ -33,7 +33,7 @@ console.log(findSubsequence(int16, new Int16Array([3, 4]))); // 2
 
 ## The Proposal
 
-The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in three forms: `search` returns the starting index of the first occurrence, `searchLast` returns the starting index of the last occurrence, and `contains` returns a simple boolean true/false if the subsequence exists. All three methods accept an optional `offset` parameter to control where the search begins.
+The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in three forms: `search` returns the starting index of the first occurrence, `searchLast` returns the starting index of the last occurrence, and `contains` returns a simple boolean true/false if the subsequence exists. All three methods accept an optional `position` parameter to control where the search begins. For `search` and `contains`, only matches starting at `position` or later are considered. For `searchLast`, only matches starting at `position` or earlier are considered.
 
 ```js
 const enc = new TextEncoder();
