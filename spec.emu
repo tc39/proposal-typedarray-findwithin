@@ -93,7 +93,7 @@ contributors: James M Snell
             1. If _direction_ is ~first~, return 𝔽(_offset_).
             1. Else, return 𝔽(min(_offset_, _haystackLength_)).
           1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-          1. [id="step-search-first"] <emu-meta effects="user-code">If _direction_ is ~first~, let _index_ be the smallest integer _k_ such that _k_ ≥ _offset_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.</emu-meta>
+          1. [id="step-search-first"] If _direction_ is ~first~, let _index_ be the smallest integer _k_ such that _k_ ≥ _offset_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
           1. [id="step-search-last"] Else, let _index_ be the largest integer _k_ such that _k_ ≤ _offset_ and _k_ + _needleLength_ ≤ _haystackLength_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
           1. Return _index_.
         </emu-alg>
@@ -135,7 +135,7 @@ contributors: James M Snell
           1. If _coerced_ is ~not-found~, return *-1*<sub>𝔽</sub>.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
           1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, _haystackLength_ - 1).
-          1. Let _startFrom_ be min(max(_n_, 0), _haystackLength_ - 1).
+          1. Let _startFrom_ be the result of clamping _n_ between 0 and _haystackLength_ - 1.
           1. Return ? TypedArraySearchSubsequence(_O_, _coerced_, ~last~, _startFrom_).
         </emu-alg>
       </emu-clause>
