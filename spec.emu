@@ -38,7 +38,7 @@ contributors: James M Snell
         </emu-alg>
       </emu-clause>
 
-      <emu-clause id="sec-iterabletotypearrayelementlist" type="abstract operation">
+      <emu-clause id="sec-iterabletotypedarrayelementlist" type="abstract operation">
         <h1>
           IterableToTypedArrayElementList (
             _iterable_: an Object,
@@ -58,6 +58,29 @@ contributors: James M Snell
             1. Else, let _numValue_ be ? ToNumber(_v_).
             1. Append _numValue_ to _result_.
           1. Return _result_.
+        </emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-sequencesamevaluezeroequal" type="abstract operation">
+        <h1>
+          SequenceSameValueZeroEqual (
+            _a_: either a List of Numbers or a List of BigInts,
+            _b_: either a List of Numbers or a List of BigInts,
+          ): a Boolean
+        </h1>
+        <dl class="header">
+          <dt>description</dt>
+          <dd>It determines whether two sequences have the same length and element-wise equal values according to the SameValueZero algorithm.</dd>
+        </dl>
+        <emu-alg>
+          1. Let _aLength_ be the number of elements in _a_.
+          1. Let _bLength_ be the number of elements in _b_.
+          1. If _aLength_ is not _bLength_, return *false*.
+          1. Let _i_ be 0.
+          1. Repeat, while _i_ &lt; _aLength_,
+            1. If SameValueZero(_a_[_i_], _b_[_i_]) is *false*, return *false*.
+            1. Set _i_ to _i_ + 1.
+          1. Return *true*.
         </emu-alg>
       </emu-clause>
 
@@ -108,17 +131,16 @@ contributors: James M Snell
           1. If _needleLength_ is 0, return 𝔽(_position_).
           1. If _direction_ is ~first~, then
             1. If _position_ + _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-            1. [id="step-search-first"] Return the smallest integer _k_ such that _k_ ≥ _position_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+            1. [id="step-search-first"] Return the smallest integer _k_ such that _k_ ≥ _position_ and SequenceSameValueZeroEqual(the List of elements of _O_ from index _k_ to _k_ + _needleLength_ - 1, _needle_) is *true*, or *-1*<sub>𝔽</sub> if no such _k_ exists.
           1. Else,
             1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-            1. [id="step-search-last"] Return the largest integer _k_ such that _k_ ≤ _position_ and _k_ + _needleLength_ ≤ _haystackLength_ and the subsequence of _O_ starting at _k_ with length _needleLength_ is SameValueZero-equal to _needle_, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+            1. [id="step-search-last"] Return the largest integer _k_ such that _k_ ≤ _position_ and _k_ + _needleLength_ ≤ _haystackLength_ and SequenceSameValueZeroEqual(the List of elements of _O_ from index _k_ to _k_ + _needleLength_ - 1, _needle_) is *true*, or *-1*<sub>𝔽</sub> if no such _k_ exists.
         </emu-alg>
         <emu-note type="editor">
           <p>The description of the subsequence search in <emu-xref href="#step-search-first"></emu-xref> and <emu-xref href="#step-search-last"></emu-xref> is intentionally high-level, allowing implementations freedom in how the search is performed. A question for committee is whether these steps need to be specified more precisely with explicit algorithmic substeps (e.g., element-by-element comparison with specific iteration order), even if implementations are expected to use optimized approaches such as Boyer-Moore or other string matching algorithms.</p>
         </emu-note>
         <emu-note>
-          <p>The _needle_ List is produced by CoerceToCompatibleTypedArrayElementList, which ensures element values are compatible with the element type of _O_.</p>
-          <p>Two subsequences are <dfn>SameValueZero-equal</dfn> if they have the same length and for each index, the corresponding elements are equal according to the SameValueZero algorithm. This means that for floating-point TypedArrays (Float32Array, Float64Array, Float16Array), *NaN* values are considered equal to each other regardless of their bit patterns, and *+0*<sub>𝔽</sub> is considered equal to *-0*<sub>𝔽</sub>.</p>
+          <p>The _needle_ is produced by CoerceToCompatibleTypedArrayElementList, which ensures element values are compatible with the element type of _O_. When _needle_ is a same-type TypedArray, it qualifies as a List of Numbers or a List of BigInts for the purposes of SequenceSameValueZeroEqual. Subsequence equality is determined by SequenceSameValueZeroEqual.</p>
           <p>Implementations may use any technique to search for the subsequence, such as naive search, Boyer-Moore, or other string matching algorithms, provided the observable result is correct.</p>
         </emu-note>
       </emu-clause>
