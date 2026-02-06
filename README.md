@@ -47,7 +47,36 @@ console.log(u8.contains(enc.encode('TC39'))); // true
 console.log(u8.contains(enc.encode('TC39'), 18)); // false
 ```
 
-Exactly how to implement the subsequence search algorithm is intended to be left as an implementation specific detail. The key caveat is that the `needle` (the subsequence being searched for) must be of the same element-type as the `haystack` (the `TypedArray` that is being searched).
+Exactly how to implement the subsequence search algorithm is intended to be left as an implementation specific detail.
+
+### Needle types
+
+The `needle` argument can be:
+
+* A **TypedArray of the same element type** as the haystack — used directly as the subsequence to search for.
+* A **different-type TypedArray** — returns `-1` (or `false` for `contains`) since a different element type cannot meaningfully match.
+* An **iterable object** (other than a String) — its elements are collected and used to construct a same-type TypedArray, which is then searched for.
+* A **String** — returns `-1` (or `false` for `contains`). Although strings are iterable, their iteration yields code points, which is unlikely to be the intended behavior when searching a TypedArray.
+* Any other value — throws a `TypeError`.
+
+```js
+const u8 = new Uint8Array([1, 2, 3, 4, 5]);
+
+// Same-type TypedArray
+u8.search(new Uint8Array([3, 4])); // 2
+
+// Iterable (e.g. plain Array)
+u8.search([3, 4]); // 2
+
+// Different-type TypedArray
+u8.search(new Int16Array([3, 4])); // -1
+
+// String
+u8.search('hello'); // -1
+
+// Non-iterable throws
+u8.search(42); // TypeError
+```
 
 ## Why just `TypedArray`? Why not all `Iterables`
 
