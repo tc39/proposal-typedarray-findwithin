@@ -38,35 +38,54 @@ contributors: James M Snell
         </emu-alg>
       </emu-clause>
 
-      <emu-clause id="sec-coercetocompatibletypedarray" type="abstract operation">
+      <emu-clause id="sec-iterabletotypearrayelementlist" type="abstract operation">
         <h1>
-          CoerceToCompatibleTypedArray (
-            _O_: a TypedArray,
-            _needle_: an ECMAScript language value,
-          ): either a normal completion containing either a TypedArray or ~not-found~, or a throw completion
+          IterableToTypedArrayElementList (
+            _iterable_: an Object,
+            _iteratorMethod_: a function object,
+            _elementType_: a TypedArray element type,
+          ): either a normal completion containing either a List of Numbers or a List of BigInts, or a throw completion
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It attempts to produce a TypedArray of the same element type as _O_ from _needle_. If _needle_ is already a same-type TypedArray, it is returned directly. If _needle_ is a String, ~not-found~ is returned. If _needle_ is a non-String Object with a @@iterator method, its elements are collected and used to construct a new TypedArray of the same type as _O_. Otherwise, a *TypeError* is thrown.</dd>
+          <dd>It iterates _iterable_ using _iteratorMethod_ and coerces each element to the appropriate numeric type for _elementType_, returning the results as a List.</dd>
+        </dl>
+        <emu-alg>
+          1. Let _values_ be ? IteratorToList(? GetIteratorFromMethod(_iterable_, _iteratorMethod_)).
+          1. Let _result_ be a new empty List.
+          1. For each element _v_ of _values_, do
+            1. If IsBigIntElementType(_elementType_) is *true*, let _numValue_ be ? ToBigInt(_v_).
+            1. Else, let _numValue_ be ? ToNumber(_v_).
+            1. Append _numValue_ to _result_.
+          1. Return _result_.
+        </emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-coercetocompatibletypedarrayelementlist" type="abstract operation">
+        <h1>
+          CoerceToCompatibleTypedArrayElementList (
+            _O_: a TypedArray,
+            _needle_: an ECMAScript language value,
+          ): either a normal completion containing either a TypedArray, a List of Numbers, or a List of BigInts, or a throw completion
+        </h1>
+        <dl class="header">
+          <dt>description</dt>
+          <dd>It produces a sequence of element values compatible with _O_ from _needle_. If _needle_ is a same-type TypedArray, it is returned directly. If _needle_ is an iterable Object, its elements are collected, coerced to the element type of _O_, and returned as a List. Non-Object values (including Strings, which would otherwise be boxed into iterable String objects) and non-iterable Objects throw a *TypeError*.</dd>
         </dl>
         <emu-alg>
           1. If _needle_ is an Object, then
-            1. If _needle_ has a [[TypedArrayName]] internal slot, then
-              1. If TypedArrayElementType(_O_) is TypedArrayElementType(_needle_), return _needle_.
-              1. Else, return ~not-found~.
+            1. If _needle_ has a [[TypedArrayName]] internal slot and TypedArrayElementType(_O_) is TypedArrayElementType(_needle_), return _needle_.
             1. Let _iteratorMethod_ be ? GetMethod(_needle_, @@iterator).
-            1. If _iteratorMethod_ is not *undefined*, then
-              1. [id="step-coerce-iterable"] Let _result_ be a new TypedArray of the same element type as _O_, containing the elements produced by iterating _needle_ using _iteratorMethod_.
-              1. Return _result_.
+            1. If _iteratorMethod_ is not *undefined*, return ? IterableToTypedArrayElementList(_needle_, _iteratorMethod_, TypedArrayElementType(_O_)).
             1. Throw a *TypeError* exception.
-          1. If _needle_ is a String, return ~not-found~.
-          1. Throw a *TypeError* exception.
+          1. Else,
+            1. Throw a *TypeError* exception.
         </emu-alg>
         <emu-note>
-          <p>When _needle_ is a TypedArray of a different element type than _O_, ~not-found~ is returned rather than throwing. A different element type implies a different element size and numeric interpretation, so the needle can never meaningfully match any subsequence within the haystack. Returning ~not-found~ (which the caller translates to *-1*<sub>𝔽</sub> or *false*) is consistent with how `indexOf` behaves when the search value cannot match any element.</p>
+          <p>When _needle_ is a same-type TypedArray, it is returned directly. A different-type TypedArray is coerced via its @@iterator method like any other iterable, with each element converted to the element type of _O_.</p>
         </emu-note>
         <emu-note type="editor">
-          <p>The acceptance of iterable objects as needles is intended to improve ergonomics (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/1">issue #1</a>). Strings are treated as not-found rather than throwing because they are iterable but their iteration yields code points, which is unlikely to be the intended behaviour when searching a TypedArray. Non-iterable objects and primitives other than String throw to avoid silent misuse (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/7">issue #7</a>).</p>
+          <p>The acceptance of iterable objects as needles is intended to improve ergonomics (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/1">issue #1</a>). String primitives are not Objects and so fall through to the *TypeError* in the final step. Non-iterable objects and non-String primitives also throw to avoid silent misuse (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/7">issue #7</a>).</p>
         </emu-note>
       </emu-clause>
 
@@ -74,7 +93,7 @@ contributors: James M Snell
         <h1>
           TypedArraySearchSubsequence (
             _O_: a TypedArray,
-            _needle_: a TypedArray,
+            _needle_: either a TypedArray, a List of Numbers, or a List of BigInts,
             _direction_: ~first~ or ~last~,
             _offset_: a non-negative integer,
           ): either a normal completion containing an integral Number or a throw completion
@@ -84,11 +103,9 @@ contributors: James M Snell
           <dd>It searches for an occurrence of the subsequence _needle_ within _O_ starting from _offset_, returning the index of the match or *-1*<sub>𝔽</sub> if not found. The _direction_ parameter controls whether the first or last match is returned. When _direction_ is ~first~, _offset_ is the index at which to begin searching forward. When _direction_ is ~last~, _offset_ is the index at which to begin searching backward (i.e., the last position at which a match may start).</dd>
         </dl>
         <emu-alg>
-          1. Assert: TypedArrayElementType(_O_) is TypedArrayElementType(_needle_).
           1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _needleRecord_ be ? ValidateTypedArray(_needle_, ~seq-cst~).
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
-          1. Let _needleLength_ be TypedArrayLength(_needleRecord_).
+          1. Let _needleLength_ be the number of elements in _needle_.
           1. If _needleLength_ is 0, then
             1. If _direction_ is ~first~, return 𝔽(_offset_).
             1. Else, return 𝔽(min(_offset_, _haystackLength_)).
@@ -101,7 +118,7 @@ contributors: James M Snell
           <p>The description of the subsequence search in <emu-xref href="#step-search-first"></emu-xref> and <emu-xref href="#step-search-last"></emu-xref> is intentionally high-level, allowing implementations freedom in how the search is performed. A question for committee is whether these steps need to be specified more precisely with explicit algorithmic substeps (e.g., element-by-element comparison with specific iteration order), even if implementations are expected to use optimized approaches such as Boyer-Moore or other string matching algorithms.</p>
         </emu-note>
         <emu-note>
-          <p>This abstract operation assumes that _needle_ has already been coerced to a TypedArray of the same element type as _O_ via CoerceToCompatibleTypedArray.</p>
+          <p>The _needle_ List is produced by CoerceToCompatibleTypedArrayElementList, which ensures element values are compatible with the element type of _O_.</p>
           <p>Two subsequences are <dfn>SameValueZero-equal</dfn> if they have the same length and for each index, the corresponding elements are equal according to the SameValueZero algorithm. This means that for floating-point TypedArrays (Float32Array, Float64Array, Float16Array), *NaN* values are considered equal to each other regardless of their bit patterns, and *+0*<sub>𝔽</sub> is considered equal to *-0*<sub>𝔽</sub>.</p>
           <p>Implementations may use any technique to search for the subsequence, such as naive search, Boyer-Moore, or other string matching algorithms, provided the observable result is correct.</p>
         </emu-note>
@@ -117,8 +134,7 @@ contributors: James M Snell
         <emu-alg>
           1. Let _O_ be the *this* value.
           1. Perform ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _coerced_ be ? CoerceToCompatibleTypedArray(_O_, _needle_).
-          1. If _coerced_ is ~not-found~, return *-1*<sub>𝔽</sub>.
+          1. Let _coerced_ be ? CoerceToCompatibleTypedArrayElementList(_O_, _needle_).
           1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, 0).
           1. Let _startFrom_ be max(_n_, 0).
           1. Return ? TypedArraySearchSubsequence(_O_, _coerced_, ~first~, _startFrom_).
@@ -131,8 +147,7 @@ contributors: James M Snell
         <emu-alg>
           1. Let _O_ be the *this* value.
           1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _coerced_ be ? CoerceToCompatibleTypedArray(_O_, _needle_).
-          1. If _coerced_ is ~not-found~, return *-1*<sub>𝔽</sub>.
+          1. Let _coerced_ be ? CoerceToCompatibleTypedArrayElementList(_O_, _needle_).
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
           1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, _haystackLength_ - 1).
           1. Let _startFrom_ be the result of clamping _n_ between 0 and _haystackLength_ - 1.
@@ -146,8 +161,7 @@ contributors: James M Snell
         <emu-alg>
           1. Let _O_ be the *this* value.
           1. Perform ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _coerced_ be ? CoerceToCompatibleTypedArray(_O_, _needle_).
-          1. If _coerced_ is ~not-found~, return *false*.
+          1. Let _coerced_ be ? CoerceToCompatibleTypedArrayElementList(_O_, _needle_).
           1. Let _n_ be ? ValidateIntegralNumberOffset(_offset_, 0).
           1. Let _startFrom_ be max(_n_, 0).
           1. Let _index_ be ? TypedArraySearchSubsequence(_O_, _coerced_, ~first~, _startFrom_).

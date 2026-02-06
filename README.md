@@ -53,10 +53,10 @@ Exactly how to implement the subsequence search algorithm is intended to be left
 
 The `needle` argument can be:
 
-* A **TypedArray of the same element type** as the haystack — used directly as the subsequence to search for.
-* A **different-type TypedArray** — returns `-1` (or `false` for `contains`) since a different element type cannot meaningfully match.
-* An **iterable object** (other than a String) — its elements are collected and used to construct a same-type TypedArray, which is then searched for.
-* A **String** — returns `-1` (or `false` for `contains`). Although strings are iterable, their iteration yields code points, which is unlikely to be the intended behavior when searching a TypedArray.
+* A **TypedArray of the same element type** as the haystack — its element values are extracted directly.
+* A **different-type TypedArray** — coerced via its `@@iterator` method, with each element converted to the haystack's element type (just like any other iterable).
+* An **iterable object** (other than a String) — its elements are collected and converted to the haystack's element type, then searched for.
+* A **String** — throws a `TypeError`. Although strings are iterable, their iteration yields code points, which is unlikely to be the intended behavior when searching a TypedArray.
 * Any other value — throws a `TypeError`.
 
 ```js
@@ -68,11 +68,11 @@ u8.search(new Uint8Array([3, 4])); // 2
 // Iterable (e.g. plain Array)
 u8.search([3, 4]); // 2
 
-// Different-type TypedArray
-u8.search(new Int16Array([3, 4])); // -1
+// Different-type TypedArray (coerced via iteration)
+u8.search(new Int16Array([3, 4])); // 2
 
-// String
-u8.search('hello'); // -1
+// String throws
+u8.search('hello'); // TypeError
 
 // Non-iterable throws
 u8.search(42); // TypeError
