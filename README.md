@@ -53,10 +53,9 @@ Exactly how to implement the subsequence search algorithm is intended to be left
 
 The `needle` argument can be:
 
-* A **TypedArray of the same element type** as the haystack — its element values are extracted directly.
-* A **different-type TypedArray** — coerced via its `@@iterator` method, with each element converted to the haystack's element type (just like any other iterable).
-* An **iterable object** (other than a String) — its elements are collected and converted to the haystack's element type, then searched for.
-* A **String** — throws a `TypeError`. Although strings are iterable, their iteration yields code points, which is unlikely to be the intended behavior when searching a TypedArray.
+* A **TypedArray** (same or different element type) — iterated via its `@@iterator` method. Each yielded value must be the correct type for the haystack (Number for non-BigInt TypedArrays, BigInt for BigInt TypedArrays); if any value is the wrong type, the search returns `-1`. This creates a snapshot of the needle's elements, which is necessary for correctness when the needle is backed by a SharedArrayBuffer.
+* An **iterable object** (other than a String) — its elements are collected and type-checked against the haystack's element type. If any element is the wrong type, the search returns `-1`.
+* A **String** — throws a `TypeError`. Although strings are iterable, their iteration yields code points, which is unlikely to be the intended behaviour when searching a TypedArray.
 * Any other value — throws a `TypeError`.
 
 ```js
@@ -68,7 +67,7 @@ u8.search(new Uint8Array([3, 4])); // 2
 // Iterable (e.g. plain Array)
 u8.search([3, 4]); // 2
 
-// Different-type TypedArray (coerced via iteration)
+// Different-type TypedArray (iterated via @@iterator)
 u8.search(new Int16Array([3, 4])); // 2
 
 // String throws
