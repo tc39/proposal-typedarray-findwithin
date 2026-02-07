@@ -47,7 +47,7 @@ contributors: James M Snell
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It determines whether two sequences have the same length and element-wise equal values according to the SameValueZero algorithm.</dd>
+          <dd>It determines whether two Lists have the same length and element-wise equal values according to the SameValueZero algorithm.</dd>
         </dl>
         <emu-alg>
           1. Let _aLength_ be the number of elements in _a_.
@@ -64,26 +64,23 @@ contributors: James M Snell
       <emu-clause id="sec-tocompatibletypedarrayelementlist" type="abstract operation">
         <h1>
           ToCompatibleTypedArrayElementList (
-            _O_: a TypedArray,
+            _typedArray_: a TypedArray,
             _needle_: an ECMAScript language value,
           ): either a normal completion containing either a List of Numbers, a List of BigInts, or ~not-found~, or a throw completion
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It produces a List of element values compatible with _O_ from _needle_. If _needle_ is an iterable Object, its elements are collected and validated against the element type of _O_. If any element is not the expected type, ~not-found~ is returned. Non-Object values (including Strings, which would otherwise be boxed into iterable String objects) and non-iterable Objects throw a *TypeError*.</dd>
+          <dd>It produces a List of element values compatible with _typedArray_ from _needle_. If _needle_ is an iterable Object, its elements are collected and validated against the element type of _typedArray_. If any element is not the expected type, ~not-found~ is returned. Non-Object values (including Strings, which would otherwise be boxed into iterable String objects) and non-iterable Objects throw a *TypeError*.</dd>
         </dl>
         <emu-alg>
           1. If _needle_ is not an Object, throw a *TypeError* exception.
           1. Let _iteratorMethod_ be ? GetMethod(_needle_, @@iterator).
           1. If _iteratorMethod_ is *undefined*, throw a *TypeError* exception.
           1. Let _values_ be ? IteratorToList(? GetIteratorFromMethod(_needle_, _iteratorMethod_)).
-          1. Let _elementType_ be TypedArrayElementType(_O_).
+          1. Let _elementType_ be TypedArrayElementType(_typedArray_).
           1. Let _result_ be a new empty List.
           1. For each element _v_ of _values_, do
-            1. If IsBigIntElementType(_elementType_) is *true*, then
-              1. If _v_ is not a BigInt, return ~not-found~.
-            1. Else,
-              1. If _v_ is not a Number, return ~not-found~.
+            1. If IsBigIntElementType(_elementType_) is *true* and _v_ is not a BigInt, or if IsBigIntElementType(_elementType_) is *false* and _v_ is not a Number, return ~not-found~.
             1. Append _v_ to _result_.
           1. Return _result_.
         </emu-alg>
@@ -100,7 +97,7 @@ contributors: James M Snell
       <emu-clause id="sec-typedarraysearchsubsequence" type="abstract operation">
         <h1>
           TypedArraySearchSubsequence (
-            _O_: a TypedArray,
+            _typedArray_: a TypedArray,
             _haystackLength_: a non-negative integer,
             _needle_: either a List of Numbers or a List of BigInts,
             _direction_: ~first~ or ~last~,
@@ -109,20 +106,20 @@ contributors: James M Snell
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It searches for an occurrence of the subsequence _needle_ within the first _haystackLength_ elements of _O_, returning the starting index of the match or *-1*<sub>𝔽</sub> if not found. The _direction_ parameter controls whether the first or last match is returned. When _direction_ is ~first~, only matches starting at index _position_ or later are considered. When _direction_ is ~last~, only matches starting at index _position_ or earlier are considered.</dd>
+          <dd>It searches for an occurrence of the subsequence _needle_ within the first _haystackLength_ elements of _typedArray_, returning the starting index of the match or *-1*<sub>𝔽</sub> if not found. The _direction_ parameter controls whether the first or last match is returned. When _direction_ is ~first~, only matches starting at index _position_ or later are considered. When _direction_ is ~last~, only matches starting at index _position_ or earlier are considered.</dd>
         </dl>
         <emu-alg>
           1. Let _needleLength_ be the number of elements in _needle_.
           1. If _needleLength_ is 0, return 𝔽(_position_).
           1. If _direction_ is ~first~, then
             1. If _position_ + _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-            1. [id="step-search-first"] Return the smallest integer _k_ such that _k_ ≥ _position_ and SequenceSameValueZeroEqual(the List of elements of _O_ from index _k_ to _k_ + _needleLength_ - 1, _needle_) is *true*, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+            1. [id="step-search-first"] Return the smallest integer _k_ such that _k_ ≥ _position_ and SequenceSameValueZeroEqual(the List of elements of _typedArray_ from index _k_ to _k_ + _needleLength_ - 1, _needle_) is *true*, or *-1*<sub>𝔽</sub> if no such _k_ exists.
           1. Else,
             1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-            1. [id="step-search-last"] Return the largest integer _k_ such that _k_ ≤ _position_ and _k_ + _needleLength_ ≤ _haystackLength_ and SequenceSameValueZeroEqual(the List of elements of _O_ from index _k_ to _k_ + _needleLength_ - 1, _needle_) is *true*, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+            1. [id="step-search-last"] Return the largest integer _k_ such that _k_ ≤ _position_ and _k_ + _needleLength_ ≤ _haystackLength_ and SequenceSameValueZeroEqual(the List of elements of _typedArray_ from index _k_ to _k_ + _needleLength_ - 1, _needle_) is *true*, or *-1*<sub>𝔽</sub> if no such _k_ exists.
         </emu-alg>
         <emu-note>
-          <p>The _needle_ is produced by ToCompatibleTypedArrayElementList, which validates that element values are the correct type for _O_ and are a snapshot that cannot be modified during the search. The elements of _O_ (the haystack) are not snapshotted, consistent with how %TypedArray%.prototype.indexOf and %TypedArray%.prototype.lastIndexOf scan the haystack directly. When _O_ is backed by a SharedArrayBuffer, another agent may modify elements of _O_ during the search.</p>
+          <p>The _needle_ is produced by ToCompatibleTypedArrayElementList, which validates that element values are the correct type for _typedArray_ and are a snapshot that cannot be modified during the search. The elements of _typedArray_ (the haystack) are not snapshotted, consistent with how %TypedArray%.prototype.indexOf and %TypedArray%.prototype.lastIndexOf scan the haystack directly. When _typedArray_ is backed by a SharedArrayBuffer, another agent may modify elements of _typedArray_ during the search.</p>
           <p>Implementations may use any technique to search for the subsequence, such as naive search, Boyer-Moore, or other matching algorithms, provided the observable result is correct.</p>
         </emu-note>
       </emu-clause>
@@ -135,14 +132,14 @@ contributors: James M Snell
         <h1>%TypedArray%.prototype.search ( _needle_ [ , _position_ ] )</h1>
         <p>This method searches for the first occurrence of the subsequence _needle_ within this TypedArray, starting the search at index _position_. It performs the following steps when called:</p>
         <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_O_, _needle_).
+          1. Let _typedArray_ be the *this* value.
+          1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
+          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_typedArray_, _needle_).
           1. If _needleList_ is ~not-found~, return *-1*<sub>𝔽</sub>.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
-          1. Let _n_ be ? ValidateIntegralNumber(_position_, 0).
-          1. Let _startFrom_ be the result of clamping _n_ between 0 and _haystackLength_.
-          1. Return TypedArraySearchSubsequence(_O_, _haystackLength_, _needleList_, ~first~, _startFrom_).
+          1. Let _start_ be ? ValidateIntegralNumber(_position_, 0).
+          1. Let _startFrom_ be the result of clamping _start_ between 0 and _haystackLength_.
+          1. Return TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~first~, _startFrom_).
         </emu-alg>
       </emu-clause>
 
@@ -150,14 +147,14 @@ contributors: James M Snell
         <h1>%TypedArray%.prototype.searchLast ( _needle_ [ , _position_ ] )</h1>
         <p>This method searches for the last occurrence of the subsequence _needle_ within this TypedArray whose starting index is at or before _position_. It performs the following steps when called:</p>
         <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_O_, _needle_).
+          1. Let _typedArray_ be the *this* value.
+          1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
+          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_typedArray_, _needle_).
           1. If _needleList_ is ~not-found~, return *-1*<sub>𝔽</sub>.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
-          1. Let _n_ be ? ValidateIntegralNumber(_position_, _haystackLength_ - 1).
-          1. Let _startFrom_ be the result of clamping _n_ between 0 and _haystackLength_ - 1.
-          1. Return TypedArraySearchSubsequence(_O_, _haystackLength_, _needleList_, ~last~, _startFrom_).
+          1. Let _start_ be ? ValidateIntegralNumber(_position_, _haystackLength_ - 1).
+          1. Let _startFrom_ be the result of clamping _start_ between 0 and _haystackLength_ - 1.
+          1. Return TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~last~, _startFrom_).
         </emu-alg>
       </emu-clause>
 
@@ -165,14 +162,14 @@ contributors: James M Snell
         <h1>%TypedArray%.prototype.contains ( _needle_ [ , _position_ ] )</h1>
         <p>This method determines whether the subsequence _needle_ exists within this TypedArray, starting the search at index _position_. It performs the following steps when called:</p>
         <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. Let _taRecord_ be ? ValidateTypedArray(_O_, ~seq-cst~).
-          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_O_, _needle_).
+          1. Let _typedArray_ be the *this* value.
+          1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
+          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_typedArray_, _needle_).
           1. If _needleList_ is ~not-found~, return *false*.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
-          1. Let _n_ be ? ValidateIntegralNumber(_position_, 0).
-          1. Let _startFrom_ be the result of clamping _n_ between 0 and _haystackLength_.
-          1. Let _index_ be TypedArraySearchSubsequence(_O_, _haystackLength_, _needleList_, ~first~, _startFrom_).
+          1. Let _start_ be ? ValidateIntegralNumber(_position_, 0).
+          1. Let _startFrom_ be the result of clamping _start_ between 0 and _haystackLength_.
+          1. Let _index_ be TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~first~, _startFrom_).
           1. If _index_ is *-1*<sub>𝔽</sub>, return *false*.
           1. Return *true*.
         </emu-alg>
