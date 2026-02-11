@@ -33,16 +33,67 @@ console.log(findSubsequence(int16, new Int16Array([3, 4]))); // 2
 
 ## The Proposal
 
-The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in two forms: one that returns the starting index of that sequence, and another that returns a simple boolean true/false if the subsequence exists.
+The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in three forms: `search` returns the starting index of the first occurrence, `searchLast` returns the starting index of the last occurrence, and `contains` returns a simple boolean true/false if the subsequence exists. All three methods accept an optional `position` parameter to control where the search begins. For `search` and `contains`, only matches starting at `position` or later are considered. For `searchLast`, only matches starting at `position` or earlier are considered.
 
 ```js
 const enc = new TextEncoder();
-const u8 = enc.encode('Hello TC39');
-console.log(u8.find(enc.encode('TC39'))); // 6
+const u8 = enc.encode('Hello TC39, Hello TC39');
+
+console.log(u8.search(enc.encode('TC39'))); // 6
+console.log(u8.search(enc.encode('TC39'), 7)); // 17
+console.log(u8.searchLast(enc.encode('TC39'))); // 17
+console.log(u8.searchLast(enc.encode('TC39'), 16)); // 6
 console.log(u8.contains(enc.encode('TC39'))); // true
+console.log(u8.contains(enc.encode('TC39'), 18)); // false
 ```
 
-Exactly how to implement the subsequence search algorithm is intended to be left as an implementation specific detail. The key caveat is that the `needle` (the subsequence being searched for) must be of the same element-type as the `haystack` (the `TypedArray` that is being searched).
+Exactly how to implement the subsequence search algorithm is intended to be left as an implementation specific detail.
+
+### Needle types
+
+The `needle` argument can be:
+
+* A **TypedArray** (same or different element type) — iterated via its `@@iterator` method. Each yielded value must be the correct type for the haystack (Number for non-BigInt TypedArrays, BigInt for BigInt TypedArrays); if any value is the wrong type, the search returns `-1`. This creates a snapshot of the needle's elements, which is necessary for correctness when the needle is backed by a SharedArrayBuffer.
+* An **iterable object** (other than a String) — its elements are collected and type-checked against the haystack's element type. If any element is the wrong type, the search returns `-1`.
+* A **String** — throws a `TypeError`. Although strings are iterable, their iteration yields code points, which is unlikely to be the intended behaviour when searching a TypedArray.
+* Any other value — throws a `TypeError`.
+
+```js
+const u8 = new Uint8Array([1, 2, 3, 4, 5]);
+
+// Same-type TypedArray
+u8.search(new Uint8Array([3, 4])); // 2
+
+// Iterable (e.g. plain Array)
+u8.search([3, 4]); // 2
+
+// Different-type TypedArray (iterated via @@iterator)
+u8.search(new Int16Array([3, 4])); // 2
+
+// String throws
+u8.search('hello'); // TypeError
+
+// Non-iterable throws
+u8.search(42); // TypeError
+```
+
+### Cross-type floating-point precision
+
+When a needle TypedArray has a narrower floating-point type than the haystack, precision loss during the round-trip through the narrower type can cause matches to fail. Needle elements are read back as JavaScript Numbers via `@@iterator`, and a value that was rounded when stored in a `Float32Array` will not SameValueZero-match the higher-precision representation in a `Float64Array`.
+
+```js
+const f64 = new Float64Array([0.3]);
+
+// Float32 cannot represent 0.3 exactly — it rounds to ≈0.30000001192092896
+f64.search(new Float32Array([0.3]));  // -1 (no match)
+
+// Values that are exact in Float32 (integers, powers of two, etc.) work fine
+const f64b = new Float64Array([0.25, 0.5, 42]);
+f64b.search(new Float32Array([0.25]));  // 0
+f64b.search(new Float32Array([42]));    // 2
+```
+
+This is not specific to this proposal — it is an inherent property of IEEE 754 floating-point arithmetic and applies equally to any cross-type element comparison.
 
 ## Why just `TypedArray`? Why not all `Iterables`
 
