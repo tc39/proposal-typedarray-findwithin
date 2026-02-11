@@ -1,17 +1,22 @@
 <!doctype html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="utf-8"><meta property="og:image" content="https://tc39.es/ecmarkup/ecma-logo.png"><meta property="og:title" content="Proposal Title Goes Here"><meta property="og:description" content="This is an emu-clause
-  This is an algorithm:
+<head><meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="utf-8"><meta property="og:image" content="https://tc39.es/ecmarkup/ecma-logo.png"><meta property="og:title" content="TypedArray.prototype.search / searchLast / contains"><meta property="og:description" content="TypedArray Objects
+
   
-    1. Let _proposal_ be *undefined*.
-    1. If IsAccepted(_proposal_) is *true*, then
-      1. Let _stage_ be *0*ℤ.
-    1. Else,
-      1. Let _stage_ be *-1*ℤ.
-    1. Return ? ToString(_stage_).">
+    The %TypedArray% Intrinsic Object
+
+    
+      Abstract Operations for TypedArray Objects
+
+      
+        
+          ValidateIntegralNumber (
+            _value_: an ECMAScript language value,
+            _default_: an integer,
+          ): either a normal completion con">
 <link rel="stylesheet" href="./spec.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
-<title>Proposal Title Goes Here</title><script>'use strict';
+<title>TypedArray.prototype.search / searchLast / contains</title><script>'use strict';
 let sdoBox = {
   init() {
     this.$alternativeId = null;
@@ -874,7 +879,7 @@ let referencePane = {
     this.$pane.appendChild(this.$tableContainer);
 
     if (menu != null) {
-      menu.$specContainer.after(this.$container);
+      menu.$specContainer.appendChild(this.$container);
     }
   },
 
@@ -1206,9 +1211,6 @@ function doShortcut(e) {
     document.documentElement.classList.toggle('show-ao-annotations');
   } else if (e.key === '?') {
     document.getElementById('shortcuts-help').classList.toggle('active');
-  } else if (e.key === ';') {
-    let el = document.getElementById('bd75b99add5f');
-    if (el != null) el.remove();
   }
 }
 
@@ -1626,7 +1628,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let sdoMap = JSON.parse(`{}`);
-let biblio = JSON.parse(`{"refsByClause":{"sec-demo-clause":["_ref_0"]},"entries":[{"type":"clause","id":"sec-demo-clause","titleHTML":"This is an emu-clause","number":"1"},{"type":"op","aoid":"IsAccepted","refId":"sec-is-accepted"},{"type":"clause","id":"sec-is-accepted","title":"IsAccepted ( proposal )","titleHTML":"IsAccepted ( <var>proposal</var> )","number":"2","referencingIds":["_ref_0"]},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"A"}]}`);
+let biblio = JSON.parse(`{"refsByClause":{"sec-typedarraysearchsubsequence":["_ref_0","_ref_1","_ref_2","_ref_3","_ref_4"],"sec-%typedarray%.prototype.search":["_ref_5","_ref_6","_ref_7"],"sec-%typedarray%.prototype.searchlast":["_ref_8","_ref_9","_ref_10"],"sec-%typedarray%.prototype.contains":["_ref_11","_ref_12","_ref_13"]},"entries":[{"type":"op","aoid":"ValidateIntegralNumber","refId":"sec-validateintegralnumber"},{"type":"clause","id":"sec-validateintegralnumber","title":"ValidateIntegralNumber ( value, default )","titleHTML":"ValidateIntegralNumber ( <var>value</var>, <var>default</var> )","number":"1.1.1.1","referencingIds":["_ref_6","_ref_9","_ref_12"]},{"type":"op","aoid":"SequenceSameValueZeroEqual","refId":"sec-sequencesamevaluezeroequal"},{"type":"clause","id":"sec-sequencesamevaluezeroequal","title":"SequenceSameValueZeroEqual ( a, b )","titleHTML":"SequenceSameValueZeroEqual ( <var>a</var>, <var>b</var> )","number":"1.1.1.2","referencingIds":["_ref_0","_ref_1"]},{"type":"op","aoid":"ToCompatibleTypedArrayElementList","refId":"sec-tocompatibletypedarrayelementlist"},{"type":"clause","id":"sec-tocompatibletypedarrayelementlist","title":"ToCompatibleTypedArrayElementList ( typedArray, needle )","titleHTML":"ToCompatibleTypedArrayElementList ( <var>typedArray</var>, <var>needle</var> )","number":"1.1.1.3","referencingIds":["_ref_2","_ref_5","_ref_8","_ref_11"]},{"type":"step","id":"step-search-first"},{"type":"step","id":"step-search-last"},{"type":"op","aoid":"TypedArraySearchSubsequence","refId":"sec-typedarraysearchsubsequence"},{"type":"clause","id":"sec-typedarraysearchsubsequence","title":"TypedArraySearchSubsequence ( typedArray, haystackLength, needle, direction, position )","titleHTML":"TypedArraySearchSubsequence ( <var>typedArray</var>, <var>haystackLength</var>, <var>needle</var>, <var>direction</var>, <var>position</var> )","number":"1.1.1.4","referencingIds":["_ref_7","_ref_10","_ref_13"]},{"type":"clause","id":"sec-abstract-operations-for-typedarray-objects","titleHTML":"Abstract Operations for TypedArray Objects","number":"1.1.1"},{"type":"clause","id":"sec-%typedarray%.prototype.search","title":"%TypedArray%.prototype.search ( needle [ , position ] )","titleHTML":"%TypedArray%.prototype.search ( <var>needle</var> [ , <var>position</var> ] )","number":"1.1.2.1"},{"type":"clause","id":"sec-%typedarray%.prototype.searchlast","title":"%TypedArray%.prototype.searchLast ( needle [ , position ] )","titleHTML":"%TypedArray%.prototype.searchLast ( <var>needle</var> [ , <var>position</var> ] )","number":"1.1.2.2"},{"type":"clause","id":"sec-%typedarray%.prototype.contains","title":"%TypedArray%.prototype.contains ( needle [ , position ] )","titleHTML":"%TypedArray%.prototype.contains ( <var>needle</var> [ , <var>position</var> ] )","number":"1.1.2.3"},{"type":"clause","id":"sec-properties-of-the-%typedarrayprototype%-object","titleHTML":"Properties of the %TypedArray% Prototype Object","number":"1.1.2"},{"type":"clause","id":"sec-%typedarray%-intrinsic-object","titleHTML":"The %TypedArray% Intrinsic Object","number":"1.1","referencingIds":["_ref_3","_ref_4"]},{"type":"clause","id":"sec-typedarray-objects","titleHTML":"TypedArray Objects","number":"1"},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"A"}]}`);
 ;let usesMultipage = false</script><style>:root {
   --foreground-color: #111;
   --background-color: #fff;
@@ -1916,6 +1918,23 @@ h1.shortname { display: none; }
 
 body.oldtoc {
   margin: 0 auto;
+}
+
+#metadata-block {
+  margin: 4em 0;
+  padding: 10px;
+  border: 1px solid #ee8421;
+}
+
+#metadata-block h1 {
+  font-size: 1.5em;
+  margin-top: 0;
+}
+
+#metadata-block > ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
 span[aria-hidden='true'] {
@@ -2239,7 +2258,7 @@ emu-oneof {
 }
 
 emu-nt {
-  display: inline-block;
+  display: inline;
   font-style: italic;
   white-space: nowrap;
   text-indent: 0;
@@ -2579,7 +2598,7 @@ table.real-table th {
 }
 
 emu-table td {
-  background: transparent;
+  background: var(--background-color);
 }
 
 td[colspan]:not([colspan="1"]), th[colspan]:not([colspan="1"]) {
@@ -2686,7 +2705,7 @@ tr.del > td {
   height: 100vh;
   max-width: 500px;
   box-sizing: border-box;
-  background: var(--control-background-color);
+  background-color: var(--control-background-color);
   overflow: hidden;
   transition: opacity 0.1s linear;
   padding: 0 5px;
@@ -3127,7 +3146,7 @@ li.menu-search-result-term::before {
 
 .toolbox::after {
   border-color: var(--toolbox-tail-background-outside-color);
-  border-top-color: var(--control-border-color);
+  border-top-color: var(--control-background-color);
   border-width: 10px;
   margin-left: -10px;
 }
@@ -3144,7 +3163,7 @@ li.menu-search-result-term::before {
   left: 0;
   right: 0;
   display: none;
-  background: var(--control-background-color);
+  background-color: var(--control-background-color);
   z-index: 1;
 }
 
@@ -3185,17 +3204,6 @@ li.menu-search-result-term::before {
   padding-right: 5px;
 }
 
-emu-normative-optional {
-  display: block;
-}
-
-emu-normative-optional::before {
-  display: block;
-  color: var(--attributes-tag-foreground-color);
-  content: "NORMATIVE OPTIONAL";
-}
-
-emu-normative-optional,
 [normative-optional],
 [deprecated],
 [legacy] {
@@ -3228,7 +3236,7 @@ emu-normative-optional,
   outline: solid 10000px var(--control-dialog-fade-color);
   border-radius: 5px;
   border-width: 1px 1px 0 1px;
-  background: var(--control-background-color);
+  background-color: var(--control-background-color);
   display: none;
 }
 
@@ -3256,6 +3264,7 @@ emu-normative-optional,
 
 #ecma-logo {
   background: var(--figure-background);
+  width: 500px;
 }
 </style><style>@media print {
 @font-face {
@@ -3329,6 +3338,7 @@ emu-normative-optional,
 
 :root {
   --page-number-style: decimal;
+  -prince-change-line-breaks-for-pagination: yes; /* see https://www.princexml.com/doc/prince-for-books/#pagination-fine-tuning */
 }
 
 @page {
@@ -3337,16 +3347,16 @@ emu-normative-optional,
   margin-bottom: 20mm;
   margin-inside: 19mm;
   margin-outside: 13mm;
-  -prince-page-fill: prefer-fill;
+  -prince-page-fill: prefer-balance; /* see https://www.princexml.com/doc/prince-for-books/#the-property--prince-page-fill */
 
-  /* Uncomment when producing WIP versions of final standards */
+  /* Uncomment when producing WIP versions of final standards, see https://www.princexml.com/doc/paged/#page-regions */
   /*
   @prince-overlay {
     color: rgba(0,0,0,0.15);
-    content: "WORK IN PROGRESS";
+    content: "DRAFT";
     font-family: Arial;
     font-weight: bolder;
-    font-size: 100pt;
+    font-size: 200pt;
     transform: rotate(-60deg);
   }
   */
@@ -3456,7 +3466,7 @@ body {
   line-height: 1.15;
 }
 
-h1, h2, h3, h4, h5, h6 { -prince-bookmark-level: none }
+h1, h2, h3, h4, h5, h6 { -prince-bookmark-level: none } /* see https://www.princexml.com/doc/prince-output/#pdf-bookmarks */
 
 .copyright-notice + h1.title {
   break-before: recto;
@@ -3476,13 +3486,22 @@ p {
   text-wrap: pretty;
   overflow-wrap: break-word;
   hyphens: auto;
-  orphans: 2;
-  widows: 2;
+  orphans: 2, -prince-prefer 3; /* see https://www.princexml.com/doc/prince-for-books/#pagination-goals */
+  widows: 2, -prince-prefer 3;
 }
 
 h1 {
   text-wrap: balance;
   line-height: 1.4;
+}
+
+pre:has(> code) {
+  margin: 0;
+}
+
+p + pre:has(+ p) {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 emu-alg {
@@ -3523,14 +3542,6 @@ emu-alg ol li:last-child {
   break-after: initial; /* it's okay to break after the last item in a list, even if it's also the first item in the list */
 }
 
-emu-normative-optional emu-clause[id] {
-  margin-top: 0;
-}
-
-emu-normative-optional emu-alg > ol {
-  margin-bottom: 0;
-}
-
 emu-note {
   gap: initial;
   justify-content: space-between;
@@ -3539,6 +3550,10 @@ emu-note {
 emu-note .note {
   font-size: 9pt;
   min-width: 4.5em;
+}
+
+emu-note table td {
+  background-color: white;
 }
 
 emu-note p,
@@ -3569,7 +3584,6 @@ emu-intro, emu-clause, emu-annex {
 }
 
 emu-clause p:first-of-type {
-  margin-bottom: 0;
   orphans: 3;
 }
 
@@ -3689,7 +3703,7 @@ caption, table > figcaption {
 }
 
 caption {
-  -prince-caption-page: first;
+  -prince-caption-page: first; /* see https://www.princexml.com/doc/css-props/#prop-prince-caption-page */
 }
 
 /* do not break inside of small tables */
@@ -3728,6 +3742,11 @@ emu-figure img {
   margin-top: 1ex;
   max-width: 100%;
   height: auto;
+}
+
+.attributes-tag {
+  break-before: avoid-page;
+  break-after: avoid-page;
 }
 
 #spec-container {
@@ -3825,8 +3844,8 @@ emu-annex > h1 .secnum {
   border: 1px solid black;
   padding: 1em;
   page: copyright;
-  page-break-before: always;
-  page-break-after: always;
+  break-before: page;
+  break-after: page;
 }
 
 .secnum {
@@ -3913,12 +3932,12 @@ p.ECMAaddress {
     @media print {
       @page :left {
         @bottom-right {
-          content: '© Ecma International 2025';
+          content: '© Ecma International 2026';
         }
       }
       @page :right {
         @bottom-left {
-          content: '© Ecma International 2025';
+          content: '© Ecma International 2026';
         }
       }
       @page :first {
@@ -3954,23 +3973,84 @@ p.ECMAaddress {
 </ul></div><div id="menu-toggle"><svg xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%; stroke:currentColor" viewBox="0 0 120 120" width="54" height="54">
       <title>Menu</title>
       <path stroke-width="10" stroke-linecap="round" d="M30,60 h60  M30,30 m0,5 h60  M30,90 m0,-5 h60"></path>
-    </svg></div><div id="menu-spacer" class="menu-spacer"></div><div id="menu"><div id="menu-search"><input type="text" id="menu-search-box" placeholder="Search..."><div id="menu-search-results" class="inactive"></div></div><div id="menu-pins"><div class="menu-pane-header">Pins<button class="unpin-all">clear</button></div><ul id="menu-pins-list"></ul></div><div class="menu-pane-header">Table of Contents</div><div id="menu-toc"><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-demo-clause" title="This is an emu-clause"><span class="secnum">1</span> This is an emu-clause</a></li><li><span class="item-toggle-none"></span><a href="#sec-is-accepted" title="IsAccepted ( proposal )"><span class="secnum">2</span> IsAccepted ( <var>proposal</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-copyright-and-software-license" title="Copyright &amp; Software License">Copyright &amp; Software License</a></li></ol></div></div><div id="spec-container"><h1 class="version">Stage -1 Draft / June 2, 2025</h1><h1 class="title">Proposal Title Goes Here</h1>
+    </svg></div><div id="menu-spacer" class="menu-spacer"></div><div id="menu"><div id="menu-search"><input type="text" id="menu-search-box" placeholder="Search..."><div id="menu-search-results" class="inactive"></div></div><div id="menu-pins"><div class="menu-pane-header">Pins<button class="unpin-all">clear</button></div><ul id="menu-pins-list"></ul></div><div class="menu-pane-header">Table of Contents</div><div id="menu-toc"><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-typedarray-objects" title="TypedArray Objects"><span class="secnum">1</span> TypedArray Objects</a><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-%typedarray%-intrinsic-object" title="The %TypedArray% Intrinsic Object"><span class="secnum">1.1</span> The %TypedArray% Intrinsic Object</a><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-abstract-operations-for-typedarray-objects" title="Abstract Operations for TypedArray Objects"><span class="secnum">1.1.1</span> Abstract Operations for TypedArray Objects</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-validateintegralnumber" title="ValidateIntegralNumber ( value, default )"><span class="secnum">1.1.1.1</span> ValidateIntegralNumber ( <var>value</var>, <var>default</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-sequencesamevaluezeroequal" title="SequenceSameValueZeroEqual ( a, b )"><span class="secnum">1.1.1.2</span> SequenceSameValueZeroEqual ( <var>a</var>, <var>b</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-tocompatibletypedarrayelementlist" title="ToCompatibleTypedArrayElementList ( typedArray, needle )"><span class="secnum">1.1.1.3</span> ToCompatibleTypedArrayElementList ( <var>typedArray</var>, <var>needle</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-typedarraysearchsubsequence" title="TypedArraySearchSubsequence ( typedArray, haystackLength, needle, direction, position )"><span class="secnum">1.1.1.4</span> TypedArraySearchSubsequence ( <var>typedArray</var>, <var>haystackLength</var>, <var>needle</var>, <var>direction</var>, <var>position</var> )</a></li></ol></li><li><span class="item-toggle">+</span><a href="#sec-properties-of-the-%typedarrayprototype%-object" title="Properties of the %TypedArray% Prototype Object"><span class="secnum">1.1.2</span> Properties of the %TypedArray% Prototype Object</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-%typedarray%.prototype.search" title="%TypedArray%.prototype.search ( needle [ , position ] )"><span class="secnum">1.1.2.1</span> %TypedArray%.prototype.search ( <var>needle</var> [ , <var>position</var> ] )</a></li><li><span class="item-toggle-none"></span><a href="#sec-%typedarray%.prototype.searchlast" title="%TypedArray%.prototype.searchLast ( needle [ , position ] )"><span class="secnum">1.1.2.2</span> %TypedArray%.prototype.searchLast ( <var>needle</var> [ , <var>position</var> ] )</a></li><li><span class="item-toggle-none"></span><a href="#sec-%typedarray%.prototype.contains" title="%TypedArray%.prototype.contains ( needle [ , position ] )"><span class="secnum">1.1.2.3</span> %TypedArray%.prototype.contains ( <var>needle</var> [ , <var>position</var> ] )</a></li></ol></li></ol></li></ol></li><li><span class="item-toggle-none"></span><a href="#sec-copyright-and-software-license" title="Copyright &amp; Software License">Copyright &amp; Software License</a></li></ol></div></div><div id="spec-container"><h1 class="version">Stage 1 Draft / February 11, 2026</h1><h1 class="title">TypedArray.prototype.search / searchLast / contains</h1>
 
-<emu-clause id="sec-demo-clause">
-  <h1><span class="secnum">1</span> This is an emu-clause</h1>
-  <p>This is an algorithm:</p>
-  <emu-alg><ol><li>Let <var>proposal</var> be <emu-val>undefined</emu-val>.</li><li>If <emu-xref aoid="IsAccepted" id="_ref_0"><a href="#sec-is-accepted">IsAccepted</a></emu-xref>(<var>proposal</var>) is <emu-val>true</emu-val>, then<ol><li>Let <var>stage</var> be <emu-val>0</emu-val><sub>ℤ</sub>.</li></ol></li><li>Else,<ol><li>Let <var>stage</var> be <emu-val>-1</emu-val><sub>ℤ</sub>.</li></ol></li><li>Return ?&nbsp;<emu-xref aoid="ToString"><a href="https://tc39.es/ecma262/#sec-tostring">ToString</a></emu-xref>(<var>stage</var>).</li></ol></emu-alg>
-</emu-clause>
+<emu-clause id="sec-typedarray-objects">
+  <h1><span class="secnum">1</span> TypedArray Objects</h1>
 
-<emu-clause id="sec-is-accepted" type="abstract operation" aoid="IsAccepted">
-  <h1><span class="secnum">2</span> IsAccepted ( <var>proposal</var> )</h1>
-  <p>The abstract operation IsAccepted takes argument <var>proposal</var> (an <emu-xref href="#sec-ecmascript-language-types"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types">ECMAScript language value</a></emu-xref>) and returns a Boolean. Tells you if the proposal was accepted It performs the following steps when called:</p>
-  <emu-alg><ol><li>If <var>proposal</var> <emu-xref href="#sec-ecmascript-language-types-string-type"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types-string-type">is not a String</a></emu-xref>, or is not accepted, return <emu-val>false</emu-val>.</li><li>Return <emu-val>true</emu-val>.</li></ol></emu-alg>
+  <emu-clause id="sec-%typedarray%-intrinsic-object">
+    <h1><span class="secnum">1.1</span> The %TypedArray% Intrinsic Object</h1>
+
+    <emu-clause id="sec-abstract-operations-for-typedarray-objects">
+      <h1><span class="secnum">1.1.1</span> Abstract Operations for TypedArray Objects</h1>
+
+      <emu-clause id="sec-validateintegralnumber" type="abstract operation" aoid="ValidateIntegralNumber">
+        <h1><span class="secnum">1.1.1.1</span> ValidateIntegralNumber ( <var>value</var>, <var>default</var> )</h1>
+        <p>The abstract operation ValidateIntegralNumber takes arguments <var>value</var> (an <emu-xref href="#sec-ecmascript-language-types"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types">ECMAScript language value</a></emu-xref>) and <var>default</var> (an <emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">integer</a></emu-xref>) and returns either a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">normal completion containing</a></emu-xref> an <emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">integer</a></emu-xref> or a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">throw completion</a></emu-xref>. It validates that <var>value</var> is either <emu-val>undefined</emu-val> or an <emu-xref href="#integral-number"><a href="https://tc39.es/ecma262/#integral-number">integral Number</a></emu-xref>, returning the corresponding mathematical <emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">integer</a></emu-xref>. If <var>value</var> is <emu-val>undefined</emu-val>, the <var>default</var> is returned. It performs the following steps when called:</p>
+        <emu-alg><ol><li>If <var>value</var> is <emu-val>undefined</emu-val>, return <var>default</var>.</li><li>If <var>value</var> <emu-xref href="#sec-ecmascript-language-types-number-type"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types-number-type">is not a Number</a></emu-xref>, throw a <emu-val>TypeError</emu-val> exception.</li><li>If <var>value</var> is <emu-val>NaN</emu-val>, throw a <emu-val>RangeError</emu-val> exception.</li><li>If <emu-xref aoid="truncate"><a href="https://tc39.es/ecma262/#eqn-truncate">truncate</a></emu-xref>(<emu-xref aoid="ℝ"><a href="https://tc39.es/ecma262/#ℝ">ℝ</a></emu-xref>(<var>value</var>)) is not <emu-xref aoid="ℝ"><a href="https://tc39.es/ecma262/#ℝ">ℝ</a></emu-xref>(<var>value</var>), throw a <emu-val>RangeError</emu-val> exception.</li><li>Return <emu-xref aoid="ℝ"><a href="https://tc39.es/ecma262/#ℝ">ℝ</a></emu-xref>(<var>value</var>).</li></ol></emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-sequencesamevaluezeroequal" type="abstract operation" aoid="SequenceSameValueZeroEqual">
+        <h1><span class="secnum">1.1.1.2</span> SequenceSameValueZeroEqual ( <var>a</var>, <var>b</var> )</h1>
+        <p>The abstract operation SequenceSameValueZeroEqual takes arguments <var>a</var> (either a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of Numbers or a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of BigInts) and <var>b</var> (either a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of Numbers or a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of BigInts) and returns a Boolean. It determines whether two <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">Lists</a></emu-xref> have the same length and element-wise equal values according to the <emu-xref aoid="SameValueZero"><a href="https://tc39.es/ecma262/#sec-samevaluezero">SameValueZero</a></emu-xref> algorithm. It performs the following steps when called:</p>
+        <emu-alg><ol><li>Let <var>aLength</var> be the number of elements in <var>a</var>.</li><li>Let <var>bLength</var> be the number of elements in <var>b</var>.</li><li>If <var>aLength</var> is not <var>bLength</var>, return <emu-val>false</emu-val>.</li><li>Let <var>i</var> be 0.</li><li>Repeat, while <var>i</var> &lt; <var>aLength</var>,<ol><li>If <emu-xref aoid="SameValueZero"><a href="https://tc39.es/ecma262/#sec-samevaluezero">SameValueZero</a></emu-xref>(<var>a</var>[<var>i</var>], <var>b</var>[<var>i</var>]) is <emu-val>false</emu-val>, return <emu-val>false</emu-val>.</li><li>Set <var>i</var> to <var>i</var> + 1.</li></ol></li><li>Return <emu-val>true</emu-val>.</li></ol></emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-tocompatibletypedarrayelementlist" type="abstract operation" aoid="ToCompatibleTypedArrayElementList">
+        <h1><span class="secnum">1.1.1.3</span> ToCompatibleTypedArrayElementList ( <var>typedArray</var>, <var>needle</var> )</h1>
+        <p>The abstract operation ToCompatibleTypedArrayElementList takes arguments <var>typedArray</var> (a <emu-xref href="#typedarray"><a href="https://tc39.es/ecma262/#typedarray">TypedArray</a></emu-xref>) and <var>needle</var> (an <emu-xref href="#sec-ecmascript-language-types"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types">ECMAScript language value</a></emu-xref>) and returns either a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">normal completion containing</a></emu-xref> either a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of Numbers, a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of BigInts, or <emu-const>not-found</emu-const>, or a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">throw completion</a></emu-xref>. It produces a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of element values compatible with <var>typedArray</var> from <var>needle</var>. If <var>needle</var> is an <emu-xref href="#sec-iterable-interface"><a href="https://tc39.es/ecma262/#sec-iterable-interface">iterable</a></emu-xref> Object, its elements are collected and validated against the element type of <var>typedArray</var>. If any element is not the expected type, <emu-const>not-found</emu-const> is returned. Non-Object values (including Strings, which would otherwise be boxed into <emu-xref href="#sec-iterable-interface"><a href="https://tc39.es/ecma262/#sec-iterable-interface">iterable</a></emu-xref> String objects) and non-<emu-xref href="#sec-iterable-interface"><a href="https://tc39.es/ecma262/#sec-iterable-interface">iterable</a></emu-xref> Objects throw a <emu-val>TypeError</emu-val>. It performs the following steps when called:</p>
+        <emu-alg><ol><li>If <var>needle</var> <emu-xref href="#sec-object-type"><a href="https://tc39.es/ecma262/#sec-object-type">is not an Object</a></emu-xref>, throw a <emu-val>TypeError</emu-val> exception.</li><li>Let <var>iteratorMethod</var> be ?&nbsp;<emu-xref aoid="GetMethod"><a href="https://tc39.es/ecma262/#sec-getmethod">GetMethod</a></emu-xref>(<var>needle</var>, @@<emu-xref href="#sec-iterator-interface"><a href="https://tc39.es/ecma262/#sec-iterator-interface">iterator</a></emu-xref>).</li><li>If <var>iteratorMethod</var> is <emu-val>undefined</emu-val>, throw a <emu-val>TypeError</emu-val> exception.</li><li>Let <var>values</var> be ?&nbsp;<emu-xref aoid="IteratorToList"><a href="https://tc39.es/ecma262/#sec-iteratortolist">IteratorToList</a></emu-xref>(? <emu-xref aoid="GetIteratorFromMethod"><a href="https://tc39.es/ecma262/#sec-getiteratorfrommethod">GetIteratorFromMethod</a></emu-xref>(<var>needle</var>, <var>iteratorMethod</var>)).</li><li>Let <var>elementType</var> be <emu-xref aoid="TypedArrayElementType"><a href="https://tc39.es/ecma262/#sec-typedarrayelementtype">TypedArrayElementType</a></emu-xref>(<var>typedArray</var>).</li><li>Let <var>result</var> be a new empty <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref>.</li><li>For each element <var>v</var> of <var>values</var>, do<ol><li>If <emu-xref aoid="IsBigIntElementType"><a href="https://tc39.es/ecma262/#sec-isbigintelementtype">IsBigIntElementType</a></emu-xref>(<var>elementType</var>) is <emu-val>true</emu-val> and <var>v</var> <emu-xref href="#sec-ecmascript-language-types-bigint-type"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types-bigint-type">is not a BigInt</a></emu-xref>, or if <emu-xref aoid="IsBigIntElementType"><a href="https://tc39.es/ecma262/#sec-isbigintelementtype">IsBigIntElementType</a></emu-xref>(<var>elementType</var>) is <emu-val>false</emu-val> and <var>v</var> <emu-xref href="#sec-ecmascript-language-types-number-type"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types-number-type">is not a Number</a></emu-xref>, return <emu-const>not-found</emu-const>.</li><li>Append <var>v</var> to <var>result</var>.</li></ol></li><li>Return <var>result</var>.</li></ol></emu-alg>
+        <emu-note><span class="note">Note</span><div class="note-contents">
+          <p>All <emu-xref href="#typedarray"><a href="https://tc39.es/ecma262/#typedarray">TypedArray</a></emu-xref> needles (whether same-type or different-type) are iterated via their @@<emu-xref href="#sec-iterator-interface"><a href="https://tc39.es/ecma262/#sec-iterator-interface">iterator</a></emu-xref> method. This ensures that the resulting <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> is a snapshot of the needle's elements at the time of the call, which is necessary for correctness when the needle is backed by a SharedArrayBuffer (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/8">issue #8</a>).</p>
+          <p>If the <emu-xref href="#sec-iterable-interface"><a href="https://tc39.es/ecma262/#sec-iterable-interface">iterable</a></emu-xref> yields values of the wrong type (e.g., BigInts when the haystack is a non-BigInt <emu-xref href="#typedarray"><a href="https://tc39.es/ecma262/#typedarray">TypedArray</a></emu-xref>, or Numbers when it <emu-xref href="#sec-ecmascript-language-types-bigint-type"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types-bigint-type">is a BigInt</a></emu-xref> <emu-xref href="#typedarray"><a href="https://tc39.es/ecma262/#typedarray">TypedArray</a></emu-xref>), <emu-const>not-found</emu-const> is returned rather than throwing. Such values can never <emu-xref aoid="SameValueZero"><a href="https://tc39.es/ecma262/#sec-samevaluezero">SameValueZero</a></emu-xref>-match any element of the haystack, so returning <emu-const>not-found</emu-const> (which callers interpret as <emu-val>-1</emu-val><sub>𝔽</sub>) is the correct result without the cost of performing the search. Alternatively we could
+          throw a TypeError in these cases.</p>
+        </div></emu-note>
+        <emu-note type="editor"><span class="note">Editor's Note</span><div class="note-contents">
+          <p>The acceptance of <emu-xref href="#sec-iterable-interface"><a href="https://tc39.es/ecma262/#sec-iterable-interface">iterable objects</a></emu-xref> as needles is intended to improve ergonomics (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/1">issue #1</a>). String primitives are not Objects and so fall through to the <emu-val>TypeError</emu-val> in the first step. Non-<emu-xref href="#sec-iterable-interface"><a href="https://tc39.es/ecma262/#sec-iterable-interface">iterable objects</a></emu-xref> and non-String primitives also throw to avoid silent misuse (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/7">issue #7</a>).</p>
+        </div></emu-note>
+      </emu-clause>
+
+      <emu-clause id="sec-typedarraysearchsubsequence" type="abstract operation" aoid="TypedArraySearchSubsequence">
+        <h1><span class="secnum">1.1.1.4</span> TypedArraySearchSubsequence ( <var>typedArray</var>, <var>haystackLength</var>, <var>needle</var>, <var>direction</var>, <var>position</var> )</h1>
+        <p>The abstract operation TypedArraySearchSubsequence takes arguments <var>typedArray</var> (a <emu-xref href="#typedarray"><a href="https://tc39.es/ecma262/#typedarray">TypedArray</a></emu-xref>), <var>haystackLength</var> (a non-negative <emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">integer</a></emu-xref>), <var>needle</var> (either a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of Numbers or a <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of BigInts), <var>direction</var> (<emu-const>first</emu-const> or <emu-const>last</emu-const>), and <var>position</var> (a non-negative <emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">integer</a></emu-xref>) and returns an <emu-xref href="#integral-number"><a href="https://tc39.es/ecma262/#integral-number">integral Number</a></emu-xref>. It searches for an occurrence of the subsequence <var>needle</var> within the first <var>haystackLength</var> elements of <var>typedArray</var>, returning the starting index of the match or <emu-val>-1</emu-val><sub>𝔽</sub> if not found. The <var>direction</var> parameter controls whether the first or last match is returned. When <var>direction</var> is <emu-const>first</emu-const>, only matches starting at index <var>position</var> or later are considered. When <var>direction</var> is <emu-const>last</emu-const>, only matches starting at index <var>position</var> or earlier are considered. It performs the following steps when called:</p>
+        <emu-alg><ol><li>Let <var>needleLength</var> be the number of elements in <var>needle</var>.</li><li>If <var>needleLength</var> is 0, return <emu-xref aoid="𝔽"><a href="https://tc39.es/ecma262/#𝔽">𝔽</a></emu-xref>(<var>position</var>).</li><li>If <var>direction</var> is <emu-const>first</emu-const>, then<ol><li>If <var>position</var> + <var>needleLength</var> &gt; <var>haystackLength</var>, return <emu-val>-1</emu-val><sub>𝔽</sub>.</li><li id="step-search-first">Return the smallest <emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">integer</a></emu-xref> <var>k</var> such that <var>k</var> ≥ <var>position</var> and <emu-xref aoid="SequenceSameValueZeroEqual" id="_ref_0"><a href="#sec-sequencesamevaluezeroequal">SequenceSameValueZeroEqual</a></emu-xref>(the <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of elements of <var>typedArray</var> from index <var>k</var> to <var>k</var> + <var>needleLength</var> - 1, <var>needle</var>) is <emu-val>true</emu-val>, or <emu-val>-1</emu-val><sub>𝔽</sub> if no such <var>k</var> exists.</li></ol></li><li>Else,<ol><li>If <var>needleLength</var> &gt; <var>haystackLength</var>, return <emu-val>-1</emu-val><sub>𝔽</sub>.</li><li id="step-search-last">Return the largest <emu-xref href="#integer"><a href="https://tc39.es/ecma262/#integer">integer</a></emu-xref> <var>k</var> such that <var>k</var> ≤ <var>position</var> and <var>k</var> + <var>needleLength</var> ≤ <var>haystackLength</var> and <emu-xref aoid="SequenceSameValueZeroEqual" id="_ref_1"><a href="#sec-sequencesamevaluezeroequal">SequenceSameValueZeroEqual</a></emu-xref>(the <emu-xref href="#sec-list-and-record-specification-type"><a href="https://tc39.es/ecma262/#sec-list-and-record-specification-type">List</a></emu-xref> of elements of <var>typedArray</var> from index <var>k</var> to <var>k</var> + <var>needleLength</var> - 1, <var>needle</var>) is <emu-val>true</emu-val>, or <emu-val>-1</emu-val><sub>𝔽</sub> if no such <var>k</var> exists.</li></ol></li></ol></emu-alg>
+        <emu-note><span class="note">Note</span><div class="note-contents">
+          <p>The <var>needle</var> is produced by <emu-xref aoid="ToCompatibleTypedArrayElementList" id="_ref_2"><a href="#sec-tocompatibletypedarrayelementlist">ToCompatibleTypedArrayElementList</a></emu-xref>, which validates that element values are the correct type for <var>typedArray</var> and are a snapshot that cannot be modified during the search. The elements of <var>typedArray</var> (the haystack) are not snapshotted, consistent with how <emu-xref href="#sec-%typedarray%-intrinsic-object" id="_ref_3"><a href="#sec-%typedarray%-intrinsic-object">%TypedArray%</a></emu-xref>.prototype.indexOf and <emu-xref href="#sec-%typedarray%-intrinsic-object" id="_ref_4"><a href="#sec-%typedarray%-intrinsic-object">%TypedArray%</a></emu-xref>.prototype.lastIndexOf scan the haystack directly. When <var>typedArray</var> is backed by a SharedArrayBuffer, another <emu-xref href="#agent"><a href="https://tc39.es/ecma262/#agent">agent</a></emu-xref> may modify elements of <var>typedArray</var> during the search.</p>
+          <p>Implementations may use any technique to search for the subsequence, such as naive search, Boyer-Moore, or other matching algorithms, provided the observable result is correct.</p>
+        </div></emu-note>
+      </emu-clause>
+    </emu-clause>
+
+    <emu-clause id="sec-properties-of-the-%typedarrayprototype%-object">
+      <h1><span class="secnum">1.1.2</span> Properties of the %TypedArray% Prototype Object</h1>
+
+      <emu-clause id="sec-%typedarray%.prototype.search">
+        <h1><span class="secnum">1.1.2.1</span> %TypedArray%.prototype.search ( <var>needle</var> [ , <var>position</var> ] )</h1>
+        <p>This method searches for the first occurrence of the subsequence <var>needle</var> within this <emu-xref href="#typedarray"><a href="https://tc39.es/ecma262/#typedarray">TypedArray</a></emu-xref>, starting the search at index <var>position</var>. It performs the following steps when called:</p>
+        <emu-alg><ol><li>Let <var>typedArray</var> be the <emu-val>this</emu-val> value.</li><li>Let <var>taRecord</var> be ?&nbsp;<emu-xref aoid="ValidateTypedArray"><a href="https://tc39.es/ecma262/#sec-validatetypedarray">ValidateTypedArray</a></emu-xref>(<var>typedArray</var>, <emu-const>seq-cst</emu-const>).</li><li>Let <var>needleList</var> be ?&nbsp;<emu-xref aoid="ToCompatibleTypedArrayElementList" id="_ref_5"><a href="#sec-tocompatibletypedarrayelementlist">ToCompatibleTypedArrayElementList</a></emu-xref>(<var>typedArray</var>, <var>needle</var>).</li><li>If <var>needleList</var> is <emu-const>not-found</emu-const>, return <emu-val>-1</emu-val><sub>𝔽</sub>.</li><li>Let <var>haystackLength</var> be <emu-xref aoid="TypedArrayLength"><a href="https://tc39.es/ecma262/#sec-typedarraylength">TypedArrayLength</a></emu-xref>(<var>taRecord</var>).</li><li>Let <var>start</var> be ?&nbsp;<emu-xref aoid="ValidateIntegralNumber" id="_ref_6"><a href="#sec-validateintegralnumber">ValidateIntegralNumber</a></emu-xref>(<var>position</var>, 0).</li><li>Let <var>startFrom</var> be the result of <emu-xref href="#clamping"><a href="https://tc39.es/ecma262/#clamping">clamping</a></emu-xref> <var>start</var> between 0 and <var>haystackLength</var>.</li><li>Return <emu-xref aoid="TypedArraySearchSubsequence" id="_ref_7"><a href="#sec-typedarraysearchsubsequence">TypedArraySearchSubsequence</a></emu-xref>(<var>typedArray</var>, <var>haystackLength</var>, <var>needleList</var>, <emu-const>first</emu-const>, <var>startFrom</var>).</li></ol></emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-%typedarray%.prototype.searchlast">
+        <h1><span class="secnum">1.1.2.2</span> %TypedArray%.prototype.searchLast ( <var>needle</var> [ , <var>position</var> ] )</h1>
+        <p>This method searches for the last occurrence of the subsequence <var>needle</var> within this <emu-xref href="#typedarray"><a href="https://tc39.es/ecma262/#typedarray">TypedArray</a></emu-xref> whose starting index is at or before <var>position</var>. It performs the following steps when called:</p>
+        <emu-alg><ol><li>Let <var>typedArray</var> be the <emu-val>this</emu-val> value.</li><li>Let <var>taRecord</var> be ?&nbsp;<emu-xref aoid="ValidateTypedArray"><a href="https://tc39.es/ecma262/#sec-validatetypedarray">ValidateTypedArray</a></emu-xref>(<var>typedArray</var>, <emu-const>seq-cst</emu-const>).</li><li>Let <var>needleList</var> be ?&nbsp;<emu-xref aoid="ToCompatibleTypedArrayElementList" id="_ref_8"><a href="#sec-tocompatibletypedarrayelementlist">ToCompatibleTypedArrayElementList</a></emu-xref>(<var>typedArray</var>, <var>needle</var>).</li><li>If <var>needleList</var> is <emu-const>not-found</emu-const>, return <emu-val>-1</emu-val><sub>𝔽</sub>.</li><li>Let <var>haystackLength</var> be <emu-xref aoid="TypedArrayLength"><a href="https://tc39.es/ecma262/#sec-typedarraylength">TypedArrayLength</a></emu-xref>(<var>taRecord</var>).</li><li>Let <var>start</var> be ?&nbsp;<emu-xref aoid="ValidateIntegralNumber" id="_ref_9"><a href="#sec-validateintegralnumber">ValidateIntegralNumber</a></emu-xref>(<var>position</var>, <var>haystackLength</var> - 1).</li><li>Let <var>startFrom</var> be the result of <emu-xref href="#clamping"><a href="https://tc39.es/ecma262/#clamping">clamping</a></emu-xref> <var>start</var> between 0 and <var>haystackLength</var> - 1.</li><li>Return <emu-xref aoid="TypedArraySearchSubsequence" id="_ref_10"><a href="#sec-typedarraysearchsubsequence">TypedArraySearchSubsequence</a></emu-xref>(<var>typedArray</var>, <var>haystackLength</var>, <var>needleList</var>, <emu-const>last</emu-const>, <var>startFrom</var>).</li></ol></emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-%typedarray%.prototype.contains">
+        <h1><span class="secnum">1.1.2.3</span> %TypedArray%.prototype.contains ( <var>needle</var> [ , <var>position</var> ] )</h1>
+        <p>This method determines whether the subsequence <var>needle</var> exists within this <emu-xref href="#typedarray"><a href="https://tc39.es/ecma262/#typedarray">TypedArray</a></emu-xref>, starting the search at index <var>position</var>. It performs the following steps when called:</p>
+        <emu-alg><ol><li>Let <var>typedArray</var> be the <emu-val>this</emu-val> value.</li><li>Let <var>taRecord</var> be ?&nbsp;<emu-xref aoid="ValidateTypedArray"><a href="https://tc39.es/ecma262/#sec-validatetypedarray">ValidateTypedArray</a></emu-xref>(<var>typedArray</var>, <emu-const>seq-cst</emu-const>).</li><li>Let <var>needleList</var> be ?&nbsp;<emu-xref aoid="ToCompatibleTypedArrayElementList" id="_ref_11"><a href="#sec-tocompatibletypedarrayelementlist">ToCompatibleTypedArrayElementList</a></emu-xref>(<var>typedArray</var>, <var>needle</var>).</li><li>If <var>needleList</var> is <emu-const>not-found</emu-const>, return <emu-val>false</emu-val>.</li><li>Let <var>haystackLength</var> be <emu-xref aoid="TypedArrayLength"><a href="https://tc39.es/ecma262/#sec-typedarraylength">TypedArrayLength</a></emu-xref>(<var>taRecord</var>).</li><li>Let <var>start</var> be ?&nbsp;<emu-xref aoid="ValidateIntegralNumber" id="_ref_12"><a href="#sec-validateintegralnumber">ValidateIntegralNumber</a></emu-xref>(<var>position</var>, 0).</li><li>Let <var>startFrom</var> be the result of <emu-xref href="#clamping"><a href="https://tc39.es/ecma262/#clamping">clamping</a></emu-xref> <var>start</var> between 0 and <var>haystackLength</var>.</li><li>Let <var>index</var> be <emu-xref aoid="TypedArraySearchSubsequence" id="_ref_13"><a href="#sec-typedarraysearchsubsequence">TypedArraySearchSubsequence</a></emu-xref>(<var>typedArray</var>, <var>haystackLength</var>, <var>needleList</var>, <emu-const>first</emu-const>, <var>startFrom</var>).</li><li>If <var>index</var> is <emu-val>-1</emu-val><sub>𝔽</sub>, return <emu-val>false</emu-val>.</li><li>Return <emu-val>true</emu-val>.</li></ol></emu-alg>
+        <emu-note type="editor"><span class="note">Editor's Note</span><div class="note-contents">
+          <p>Whether <code>contains</code> should exist as a separate method or whether users should simply use <code>search(_needle_) !== -1</code> is an open question. See <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/6">issue #6</a> for discussion.</p>
+        </div></emu-note>
+      </emu-clause>
+    </emu-clause>
+  </emu-clause>
 </emu-clause><emu-annex id="sec-copyright-and-software-license" back-matter="">
         <h1>Copyright &amp; Software License</h1>
         
         <div class="copyright-notice" id="copyright-notice"><h2>Copyright Notice</h2>
-<p>© 2025 Your Name(s) Here</p>
+<p>© 2026 James M Snell</p>
 </div>
         <h2>Software License</h2>
         <p>All Software contained in this document ("Software") is protected by copyright and is being made available under the "BSD License", included below. This Software may be subject to third party rights (rights from parties other than Ecma International), including patent rights, and no licenses under such third party rights are granted under this license even if the third party concerned is a member of Ecma International. SEE THE ECMA CODE OF CONDUCT IN PATENT MATTERS AVAILABLE AT <a href="https://ecma-international.org/memento/codeofconduct.htm">https://ecma-international.org/memento/codeofconduct.htm</a> FOR INFORMATION REGARDING THE LICENSING OF PATENT CLAIMS THAT ARE REQUIRED TO IMPLEMENT ECMA INTERNATIONAL STANDARDS.</p>
