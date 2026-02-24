@@ -5,7 +5,10 @@
   "scripts": {
     "start": "npm run build-loose -- --watch",
     "build": "npm run build-loose -- --strict",
-    "build-loose": "node -e 'fs.mkdirSync(\"build\", { recursive: true })' && ecmarkup --load-biblio @tc39/ecma262-biblio --verbose spec.emu build/index.html --lint-spec"
+    "build-loose": "node -e 'fs.mkdirSync(\"build\", { recursive: true })' && ecmarkup --load-biblio @tc39/ecma262-biblio --verbose spec.emu build/index.html --lint-spec",
+    "slides": "slidev slides.md",
+    "slides:build": "slidev build slides.md",
+    "slides:export": "slidev export slides.md"
   },
   "homepage": "https://github.com/tc39/template-for-proposals#readme",
   "repository": {
@@ -15,6 +18,8 @@
   "license": "MIT",
   "devDependencies": {
     "@tc39/ecma262-biblio": "^2.1.2895",
+    "@slidev/cli": "^51.5.0",
+    "@slidev/theme-default": "latest",
     "ecmarkup": "^21.3.0",
     "jsdom": "^26.1.0",
     "parse5-html-rewriting-stream": "^7.1.0",
