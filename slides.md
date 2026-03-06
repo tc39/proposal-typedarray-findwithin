@@ -166,9 +166,7 @@ u8.search(new BigInt64Array([1n, 2n]));  // -1 or TypeError?
 # Open: SharedArrayBuffer-backed Needles
 [#8](https://github.com/tc39/proposal-typedarray-findwithin/issues/8) — @bakkot
 
-**Should same-type TypedArray needles be copyable without iteration?**
-
-The current spec always iterates the needle via `@@iterator` to create a snapshot. This is necessary for correctness when the needle is backed by a SharedArrayBuffer (another agent could mutate elements mid-search).
+**How should TypedArray needles be handled — especially when backed by a SharedArrayBuffer?**. Currently snapshots needle via `@@iterator` before search, prevents mutating a SAB-backed needle mid-search.
 
 ```js
 // Worker could change needle from [2,3] to [3,2] mid-search
@@ -176,11 +174,13 @@ let needle = new Uint8Array(sharedBuffer);
 Uint8Array.of(2, 2, 3, 3, 2).search(needle); // could return -1 without snapshot
 ```
 
-Trade-off:
-- **Always snapshot** (current) — correct, but no fast path for same-type non-shared needles
-- **Optimize non-shared case** — skip iteration when needle's buffer is not shared; still snapshot for SAB
+| Strategy | Copies needle |
+|---|---|
+| **Always snapshot** (current spec) | Always |
+| **Snapshot if shared** | Only SAB-backed |
+| **Never snapshot** | Never (user syncs SAB) |
 
-**Current spec snapshots always.** Open to optimizing the non-shared path.
+The haystack is never snapshotted (`indexOf`/`lastIndexOf` precedent). **Seeking committee guidance.**
 
 ---
 
@@ -207,7 +207,7 @@ Trade-off:
 |-------|--------|---------|
 | Is `contains` justified? | Open | Committee guidance |
 | Throw vs `-1` for wrong types | Open | Committee preference |
-| SAB-backed needle optimization | Open | Committee input |
+| SAB-backed needle: snapshot always / if shared / never | Open | Committee input |
 | Needle type (accept iterables) | Addressed in spec | -- |
 | Find from end (`searchLast`) | Addressed in spec | -- |
 | Implementation-defined algorithm | Addressed in spec | -- |
