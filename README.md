@@ -53,8 +53,8 @@ Exactly how to implement the subsequence search algorithm is intended to be left
 
 The `needle` argument can be:
 
-* A **TypedArray** (same or different element type) — iterated via its `@@iterator` method. Each yielded value must be the correct type for the haystack (Number for non-BigInt TypedArrays, BigInt for BigInt TypedArrays); if any value is the wrong type, the search returns `-1`. This creates a snapshot of the needle's elements, which is necessary for correctness when the needle is backed by a SharedArrayBuffer.
-* An **iterable object** (other than a String) — its elements are collected and type-checked against the haystack's element type. If any element is the wrong type, the search returns `-1`.
+* A **TypedArray** (same or different element type) — elements are read directly from the needle's underlying buffer via `GetValueFromBuffer`, without calling `@@iterator`. This is consistent with how `%TypedArray%.prototype.set` handles TypedArray sources. The needle and haystack must have compatible content types (both Number-typed or both BigInt-typed); if not, the search returns `-1`.
+* An **iterable object** (other than a String) — iterated via the `@@iterator` protocol. Each yielded value is type-checked against the haystack's element type (Number for non-BigInt TypedArrays, BigInt for BigInt TypedArrays); if any value is the wrong type, the search returns `-1`.
 * A **String** — throws a `TypeError`. Although strings are iterable, their iteration yields code points, which is unlikely to be the intended behaviour when searching a TypedArray.
 * Any other value — throws a `TypeError`.
 
@@ -67,7 +67,7 @@ u8.search(new Uint8Array([3, 4])); // 2
 // Iterable (e.g. plain Array)
 u8.search([3, 4]); // 2
 
-// Different-type TypedArray (iterated via @@iterator)
+// Different-type TypedArray (read from buffer)
 u8.search(new Int16Array([3, 4])); // 2
 
 // String throws
@@ -79,7 +79,7 @@ u8.search(42); // TypeError
 
 ### Cross-type floating-point precision
 
-When a needle TypedArray has a narrower floating-point type than the haystack, precision loss during the round-trip through the narrower type can cause matches to fail. Needle elements are read back as JavaScript Numbers via `@@iterator`, and a value that was rounded when stored in a `Float32Array` will not SameValueZero-match the higher-precision representation in a `Float64Array`.
+When a needle TypedArray has a narrower floating-point type than the haystack, precision loss can cause matches to fail. Needle elements are read from the buffer as the needle's element type and converted to JavaScript Numbers via `GetValueFromBuffer`. A value that was rounded when stored in a `Float32Array` will not SameValueZero-match the higher-precision representation in a `Float64Array`.
 
 ```js
 const f64 = new Float64Array([0.3]);

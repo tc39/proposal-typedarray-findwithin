@@ -32,9 +32,9 @@ For each TypedArray type (`Int8Array`, `Uint8Array`, `Uint8ClampedArray`, `Int16
 
 ---
 
-## 2. Needle Validation (`ToCompatibleTypedArrayElementList`)
+## 2. Needle Validation (`TypedArraySubsequenceFromTypedArray` / `TypedArraySubsequenceFromIterable`)
 
-### 2.1 Same-type TypedArray (iterated via @@iterator)
+### 2.1 Same-type TypedArray (read from buffer via `TypedArraySubsequenceFromTypedArray`)
 
 For each method (`search`, `searchLast`, `contains`):
 
@@ -51,7 +51,7 @@ For each method (`search`, `searchLast`, `contains`):
 - [ ] [2.1.11] `new BigInt64Array([1n,2n,3n]).search(new BigInt64Array([2n,3n]))` → 1
 - [ ] [2.1.12] `new BigUint64Array([1n,2n]).search(new BigUint64Array([1n,2n]))` → 0
 
-### 2.2 Different-type TypedArray (iterated via @@iterator)
+### 2.2 Different-type TypedArray (read from buffer via `TypedArraySubsequenceFromTypedArray`)
 
 For each method (`search`, `searchLast`, `contains`):
 
@@ -64,12 +64,14 @@ For each method (`search`, `searchLast`, `contains`):
 
 For each method (`search`, `searchLast`, `contains`):
 
-- [ ] [2.3.1] Searching a `Float64Array` containing `1.1` (native Float64) with a `Float32Array` needle `[1.1]` → -1 (Float32 `1.1` is `1.100000023841858` as a Number, which does not SameValueZero-match the Float64 `1.1`)
+- [ ] [2.3.1] Searching a `Float64Array` containing `1.1` (native Float64) with a `Float32Array` needle `[1.1]` → -1 (the needle element is read from the Float32 buffer via GetValueFromBuffer, yielding `1.100000023841858` as a Number, which does not SameValueZero-match the Float64 `1.1`)
 
 ### 2.4 BigInt / Number type mismatch → -1 (not TypeError)
 
-- [ ] [2.4.1] `new BigInt64Array([1n,2n]).search(new Uint8Array([1,2]))` → -1 (needle yields Numbers, haystack expects BigInts)
-- [ ] [2.4.2] `new Uint8Array([1,2]).search(new BigInt64Array([1n,2n]))` → -1 (needle yields BigInts, haystack expects Numbers)
+For TypedArray needles, the mismatch is detected via `[[ContentType]]` check in `TypedArraySubsequenceFromTypedArray`. For iterable needles, it is detected by per-element type checking in `TypedArraySubsequenceFromIterable`.
+
+- [ ] [2.4.1] `new BigInt64Array([1n,2n]).search(new Uint8Array([1,2]))` → -1 (`[[ContentType]]` mismatch: ~bigint~ vs ~number~)
+- [ ] [2.4.2] `new Uint8Array([1,2]).search(new BigInt64Array([1n,2n]))` → -1 (`[[ContentType]]` mismatch: ~number~ vs ~bigint~)
 - [ ] [2.4.3] `new BigInt64Array([1n,2n]).searchLast(new Uint8Array([1,2]))` → -1
 - [ ] [2.4.4] `new Uint8Array([1,2]).contains(new BigInt64Array([1n,2n]))` → false
 
@@ -147,45 +149,50 @@ For each method (`search`, `searchLast`, `contains`):
 - [ ] [2.11.9] `new Uint8Array([1,2,3]).searchLast()` → TypeError (no argument)
 - [ ] [2.11.10] `new Uint8Array([1,2,3]).contains()` → TypeError (no argument)
 
-### 2.12 TypedArray needle with overridden `Symbol.iterator`
+### 2.12 TypedArray needle — `Symbol.iterator` is NOT called
 
-Since needle elements are collected via `@@iterator`, a TypedArray whose `Symbol.iterator` has been overridden will yield whatever the custom iterator produces, not the underlying buffer contents.
+Since TypedArray needles are handled by `TypedArraySubsequenceFromTypedArray`, which reads directly from the underlying buffer, the `@@iterator` method is not called. Overriding `Symbol.iterator` on a TypedArray needle has no effect. This is consistent with how `%TypedArray%.prototype.set` handles TypedArray sources via `SetTypedArrayFromTypedArray`.
 
 For each method (`search`, `searchLast`, `contains`):
 
-- [ ] [2.12.1] Needle TypedArray with `Symbol.iterator` overridden to yield different values:
+- [ ] [2.12.1] Needle TypedArray with `Symbol.iterator` overridden — override is ignored:
   ```js
-  const needle = new Uint8Array([99, 99]);
-  needle[Symbol.iterator] = function*() { yield 3; yield 4; };
-  new Uint8Array([1, 2, 3, 4, 5]).search(needle) // → 2 (searches for [3,4], not [99,99])
+  const needle = new Uint8Array([3, 4]);
+  needle[Symbol.iterator] = function*() { yield 99; yield 99; };
+  new Uint8Array([1, 2, 3, 4, 5]).search(needle) // → 2 (searches for [3,4] from buffer, ignores override)
   ```
-- [ ] [2.12.2] Needle TypedArray with `Symbol.iterator` overridden to yield fewer elements:
+- [ ] [2.12.2] Needle TypedArray with `Symbol.iterator` deleted — still works:
   ```js
-  const needle = new Uint8Array([1, 2, 3]);
-  needle[Symbol.iterator] = function*() { yield 2; };
-  new Uint8Array([1, 2, 3]).search(needle) // → 1 (searches for [2], not [1,2,3])
+  const needle = new Uint8Array([2, 3]);
+  delete needle[Symbol.iterator];
+  // Even with prototype's @@iterator deleted:
+  const saved = Uint8Array.prototype[Symbol.iterator];
+  delete Uint8Array.prototype[Symbol.iterator];
+  try {
+    new Uint8Array([1, 2, 3]).search(needle) // → 1 (reads from buffer, @@iterator not needed)
+  } finally {
+    Uint8Array.prototype[Symbol.iterator] = saved;
+  }
   ```
-- [ ] [2.12.3] Needle TypedArray with `Symbol.iterator` overridden to yield nothing:
+- [ ] [2.12.3] Verify @@iterator is not called (no observable side effect):
   ```js
-  const needle = new Uint8Array([1, 2, 3]);
-  needle[Symbol.iterator] = function*() {};
-  new Uint8Array([1, 2, 3]).search(needle) // → 0 (empty needle returns position)
-  ```
-- [ ] [2.12.4] Needle TypedArray with `Symbol.iterator` overridden to yield more elements:
-  ```js
-  const needle = new Uint8Array([1]);
-  needle[Symbol.iterator] = function*() { yield 2; yield 3; yield 4; };
-  new Uint8Array([1, 2, 3, 4, 5]).search(needle) // → 1 (searches for [2,3,4], not [1])
+  let called = false;
+  const needle = new Uint8Array([2, 3]);
+  needle[Symbol.iterator] = function() { called = true; return [][Symbol.iterator](); };
+  new Uint8Array([1, 2, 3]).search(needle); // → 1
+  assert(called === false); // @@iterator was not invoked
   ```
 
-Note: Error cases for overridden `Symbol.iterator` (wrong types, non-callable, undefined/null, throws) are covered by the corresponding generic cases in sections 2.7, 2.8, and 2.10. The cases above focus on demonstrating that the override is respected for the yielded values.
+Note: `Symbol.iterator` overrides on non-TypedArray iterables (plain Arrays, generators, etc.) ARE respected — those go through `TypedArraySubsequenceFromIterable` which uses the iterator protocol. See sections 2.5-2.8.
 
 ### 2.13 Detached TypedArray needle
 
+TypedArray needles are handled by `TypedArraySubsequenceFromTypedArray`, which calls `MakeTypedArrayWithBufferWitnessRecord` and `IsTypedArrayOutOfBounds`. A detached buffer causes `IsTypedArrayOutOfBounds` to return *true*, resulting in a TypeError.
+
 For each method (`search`, `searchLast`, `contains`):
 
-- [ ] [2.13.1] Same-type, detached: needle is a same-type TypedArray with a detached buffer → iteration via @@iterator; behaviour depends on the TypedArray's @@iterator implementation for detached buffers
-- [ ] [2.13.2] Different-type, detached: needle is a different-type TypedArray with a detached buffer → iteration via @@iterator; behaviour depends on the TypedArray's @@iterator implementation for detached buffers
+- [ ] [2.13.1] Same-type, detached: needle is a same-type TypedArray with a detached buffer → TypeError
+- [ ] [2.13.2] Different-type, detached: needle is a different-type TypedArray with a detached buffer → TypeError
 
 ---
 
@@ -479,13 +486,14 @@ For each BigInt type (`BigInt64Array`, `BigUint64Array`):
 
 ## 9. Evaluation Order and Observable Side Effects
 
-### 9.1 ValidateTypedArray before ToCompatibleTypedArrayElementList
+### 9.1 ValidateTypedArray before needle collection
 
 For each method (`search`, `searchLast`, `contains`):
 
 - [ ] [9.1.1] Detached buffer with an iterable needle that has observable side effects → TypeError from validation, iterator never called
+- [ ] [9.1.2] Detached buffer with a TypedArray needle → TypeError from haystack validation, needle's buffer not accessed
 
-### 9.2 ToCompatibleTypedArrayElementList before ValidateIntegralNumber
+### 9.2 Needle collection before ValidateIntegralNumber
 
 For each method (`search`, `searchLast`, `contains`):
 
@@ -494,7 +502,7 @@ For each method (`search`, `searchLast`, `contains`):
   new Uint8Array([1,2,3]).search(42, 'bad') // → TypeError (from needle, not position)
   ```
 
-### 9.3 ValidateIntegralNumber after needle validation
+### 9.3 ValidateIntegralNumber after needle collection
 
 For each method (`search`, `searchLast`, `contains`):
 
@@ -504,12 +512,13 @@ For each method (`search`, `searchLast`, `contains`):
   new Uint8Array([1,2,3]).search([1,2], 'bad') // → TypeError
   ```
 
-### 9.4 Iterator side effects
+### 9.4 Iterator side effects (iterable path only)
 
 For each method (`search`, `searchLast`, `contains`):
 
 - [ ] [9.4.1] Iterable whose iterator modifies global state → verify iteration happens exactly once
 - [ ] [9.4.2] Iterable whose iterator throws midway → error propagates, partial iteration observable
+- [ ] [9.4.3] TypedArray needle does NOT trigger iterator side effects → @@iterator is not called (see also 2.12.3)
 
 ---
 
@@ -615,12 +624,16 @@ Note: `ToCompatibleTypedArrayElementList` validates that iterable elements are N
 
 ## 12. SharedArrayBuffer Considerations
 
-The needle is always snapshotted into a List via `@@iterator` before the search begins, so concurrent modifications to the needle's underlying buffer cannot affect the search. The haystack is *not* snapshotted — its elements are read directly during the search, consistent with `indexOf` and `lastIndexOf`. This means another agent may modify haystack elements during the search.
+TypedArray needles are read directly from their underlying buffer via `TypedArraySubsequenceFromTypedArray` using `GetValueFromBuffer` with ~unordered~ ordering. Each element is read individually, so for SAB-backed needles, another agent may modify elements between reads. Iterable (non-TypedArray) needles are snapshotted into a List via `@@iterator`. The haystack is *not* snapshotted — its elements are read directly during the search, consistent with `indexOf` and `lastIndexOf`.
 
-### 12.1 Needle backed by SharedArrayBuffer (snapshotted)
+### 12.1 TypedArray needle backed by SharedArrayBuffer (not snapshotted)
 
-- [ ] [12.1.1] Needle elements are read via `@@iterator` before the search begins, producing a fixed snapshot List. Concurrent writes to the needle's SharedArrayBuffer by another agent after iteration completes do not affect the search result.
-- [ ] [12.1.2] Example: needle `[2, 3]` is iterated and snapshotted; even if another agent changes the needle's buffer to `[9, 9]` mid-search, the search still looks for `[2, 3]`.
+- [ ] [12.1.1] TypedArray needle elements are read individually from the SAB via `GetValueFromBuffer`. Another agent may modify needle elements between reads, potentially yielding an incoherent needle List.
+- [ ] [12.1.2] Example: needle starts as `[2, 3]`; another agent changes element 0 to `9` after it is read but before element 1 is read. The search proceeds with the needle List `[2, 3]` or `[9, 3]` depending on timing.
+
+### 12.1a Iterable needle backed by SharedArrayBuffer (snapshotted via @@iterator)
+
+- [ ] [12.1a.1] Non-TypedArray iterable backed by a SharedArrayBuffer (e.g., a custom iterable wrapping SAB reads) — elements are snapshotted via `@@iterator` in `TypedArraySubsequenceFromIterable`. Concurrent modifications after iteration completes do not affect the search.
 
 ### 12.2 Haystack backed by SharedArrayBuffer (not snapshotted)
 
@@ -630,7 +643,8 @@ The needle is always snapshotted into a List via `@@iterator` before the search 
 
 ### 12.3 Both haystack and needle backed by SharedArrayBuffer
 
-- [ ] [12.3.1] The needle is snapshotted before the search. The haystack is read live. The combination of these two behaviours is well-defined: the search compares a frozen needle List against live haystack reads.
+- [ ] [12.3.1] For TypedArray needles: both needle and haystack elements are read live (neither is snapshotted). Another agent may modify either during the search. Users must synchronize access externally.
+- [ ] [12.3.2] For iterable needles: the needle is snapshotted via `@@iterator` before the search. The haystack is read live. The search compares a frozen needle List against live haystack reads.
 
 ---
 
@@ -668,9 +682,11 @@ For each method (`search`, `searchLast`, `contains`):
 - [ ] [13.2.1] Auto-length needle TypedArray over resizable buffer, no resize → normal iteration, produces correct snapshot List
 - [ ] [13.2.2] Fixed-length needle TypedArray over resizable buffer, no resize → normal iteration, produces correct snapshot List
 
-### 13.3 Needle iteration detaches the haystack's buffer
+### 13.3 Needle iteration detaches the haystack's buffer (iterable path only)
 
-A custom iterable whose iterator detaches the haystack's `ArrayBuffer` during iteration. `ValidateTypedArray` was already called (step 2), so `_taRecord_` has a pre-detachment buffer witness. After `ToCompatibleTypedArrayElementList` returns, `TypedArrayLength(_taRecord_)` uses the stale witness. The search proceeds but element reads from the detached buffer return `undefined`, which will not SameValueZero-match any numeric needle element.
+A custom iterable whose iterator detaches the haystack's `ArrayBuffer` during iteration. `ValidateTypedArray` was already called (step 2), so `_taRecord_` has a pre-detachment buffer witness. After `TypedArraySubsequenceFromIterable` returns, `TypedArrayLength(_taRecord_)` uses the stale witness. The search proceeds but element reads from the detached buffer return `undefined`, which will not SameValueZero-match any numeric needle element.
+
+Note: This scenario cannot occur with TypedArray needles, since `TypedArraySubsequenceFromTypedArray` reads the needle's buffer directly without invoking user code that could detach the haystack's buffer.
 
 - [ ] [13.3.1] Custom iterable that detaches the haystack's ArrayBuffer during iteration → search returns -1 (element reads return `undefined`)
   ```js
@@ -697,27 +713,27 @@ A custom iterable whose iterator detaches the haystack's `ArrayBuffer` during it
 - [ ] [13.3.2] Same scenario with `contains` → false
 - [ ] [13.3.3] Same scenario with `searchLast` → -1
 
-### 13.4 Needle's own buffer shrunk or detached during its iteration
+### 13.4 Needle TypedArray's own buffer shrunk or detached before read
 
-When the needle is a TypedArray backed by a resizable ArrayBuffer, the TypedArray `@@iterator` checks `IsTypedArrayOutOfBounds` on every `.next()` call. If the buffer is shrunk or detached such that the needle goes out of bounds, `.next()` throws a TypeError. This error propagates through `IteratorToList` and `ToCompatibleTypedArrayElementList`.
-
-For each method (`search`, `searchLast`, `contains`):
-
-- [ ] [13.4.1] Needle is auto-length over a resizable buffer; a custom `next()` wrapper shrinks the buffer below the needle's byte offset mid-iteration → TypeError from `@@iterator`'s `.next()`
-- [ ] [13.4.2] Needle is fixed-length over a resizable buffer; buffer is shrunk below `byteOffset + length * elementSize` mid-iteration → TypeError from `@@iterator`'s `.next()`
-- [ ] [13.4.3] Needle TypedArray's buffer is detached during its own iteration → TypeError from `@@iterator`'s `.next()`
-
-### 13.5 Needle's buffer grown during its iteration (auto-length needle)
-
-When the needle is an auto-length TypedArray and its resizable buffer is grown during iteration, the `@@iterator` sees the new larger `TypedArrayLength` and continues iterating into the newly available elements. This produces a longer-than-expected needle List.
+Since TypedArray needles are read via `TypedArraySubsequenceFromTypedArray` (not `@@iterator`), `IsTypedArrayOutOfBounds` is checked once at the start. If the needle is already out of bounds or detached, a TypeError is thrown. However, since no user code runs during the buffer reads, the buffer cannot be shrunk or detached *during* the read (unlike the `@@iterator` path).
 
 For each method (`search`, `searchLast`, `contains`):
 
-- [ ] [13.5.1] Auto-length needle over a resizable buffer; buffer is grown during iteration → needle List contains more elements than initially expected; search uses the full (longer) snapshot
+- [ ] [13.4.1] Needle is auto-length over a resizable buffer; buffer shrunk below the needle's range before calling the method → TypeError from `IsTypedArrayOutOfBounds`
+- [ ] [13.4.2] Needle is fixed-length over a resizable buffer; buffer shrunk below `byteOffset + length * elementSize` before calling the method → TypeError from `IsTypedArrayOutOfBounds`
+- [ ] [13.4.3] Needle TypedArray's buffer is detached before calling the method → TypeError from `IsTypedArrayOutOfBounds`
 
-### 13.6 Haystack buffer resized during needle iteration
+### 13.5 Needle TypedArray's buffer grown (auto-length needle)
 
-The `_taRecord_` is created by `ValidateTypedArray` before needle iteration begins. If the haystack's resizable buffer is resized during needle iteration:
+Since TypedArray needles are read via `TypedArraySubsequenceFromTypedArray`, `TypedArrayLength` is computed once from the buffer witness record created by `MakeTypedArrayWithBufferWitnessRecord`. If the buffer is grown before the method is called, the auto-length needle reflects the new size. The buffer cannot be grown *during* the read since no user code runs.
+
+For each method (`search`, `searchLast`, `contains`):
+
+- [ ] [13.5.1] Auto-length needle over a resizable buffer; buffer is grown before calling the method → needle length reflects the new buffer size; search uses all elements
+
+### 13.6 Haystack buffer resized during needle iteration (iterable path only)
+
+The `_taRecord_` is created by `ValidateTypedArray` before needle collection begins. If the haystack's resizable buffer is resized during needle iteration (only possible with iterable needles, since TypedArray needle reads do not invoke user code):
 
 For each method (`search`, `searchLast`, `contains`):
 
@@ -740,7 +756,7 @@ For each method (`search`, `searchLast`, `contains`):
 
 ### 14.1 Self-search (searching a TypedArray for itself)
 
-The needle is snapshotted into a List via `@@iterator` before the search begins, so the search compares the live haystack against an independent copy of its own elements.
+The needle elements are read from the buffer via `TypedArraySubsequenceFromTypedArray` into a List before the search begins. The search then compares this List against the live haystack elements read via `! Get`. Since both read from the same buffer and the method does not modify the buffer, self-search is safe.
 
 - [ ] [14.1.1] `const u8 = new Uint8Array([1,2,3]); u8.search(u8)` → 0 (entire array matches at index 0)
 - [ ] [14.1.2] `const u8 = new Uint8Array([1,2,3]); u8.searchLast(u8)` → 0 (only one possible match position)
