@@ -49,12 +49,9 @@ Exactly how to implement the subsequence search algorithm is intended to be left
 
 ### Needle types
 
-The `needle` argument can be:
+The `needle` argument must be a **TypedArray** (same or different element type). Elements are read directly from the needle's underlying buffer via `GetValueFromBuffer`, without calling `@@iterator`. This is consistent with how `%TypedArray%.prototype.set` handles TypedArray sources. The needle and haystack must have compatible content types (both Number-typed or both BigInt-typed); if not, the search returns `-1`.
 
-* A **TypedArray** (same or different element type) — elements are read directly from the needle's underlying buffer via `GetValueFromBuffer`, without calling `@@iterator`. This is consistent with how `%TypedArray%.prototype.set` handles TypedArray sources. The needle and haystack must have compatible content types (both Number-typed or both BigInt-typed); if not, the search returns `-1`.
-* An **iterable object** (other than a String) — iterated via the `@@iterator` protocol. Each yielded value is type-checked against the haystack's element type (Number for non-BigInt TypedArrays, BigInt for BigInt TypedArrays); if any value is the wrong type, the search returns `-1`.
-* A **String** — throws a `TypeError`. Although strings are iterable, their iteration yields code points, which is unlikely to be the intended behaviour when searching a TypedArray.
-* Any other value — throws a `TypeError`.
+Any other value — throws a `TypeError`.
 
 ```js
 const u8 = new Uint8Array([1, 2, 3, 4, 5]);
@@ -62,16 +59,12 @@ const u8 = new Uint8Array([1, 2, 3, 4, 5]);
 // Same-type TypedArray
 u8.search(new Uint8Array([3, 4])); // 2
 
-// Iterable (e.g. plain Array)
-u8.search([3, 4]); // 2
-
 // Different-type TypedArray (read from buffer)
 u8.search(new Int16Array([3, 4])); // 2
 
-// String throws
+// Non-TypedArray throws
+u8.search([3, 4]); // TypeError
 u8.search('hello'); // TypeError
-
-// Non-iterable throws
 u8.search(42); // TypeError
 ```
 
@@ -93,10 +86,5 @@ f64b.search(new Float32Array([42]));    // 2
 
 This is not specific to this proposal — it is an inherent property of IEEE 754 floating-point arithmetic and applies equally to any cross-type element comparison.
 
-## Why just `TypedArray`? Why not all `Iterables`
 
-This proposal could generally address the same problem of searching for subsequences within any iterable. That's something the committee should decide. There are a few issues there however:
-
-* It will be easier to optimize the performance of searching for the `needle` in the `haystack` `TypedArray` specifically than it will be dealing with the iterable protocol in general. While it might make sense for this proposal to tackle iterables, there are a different set of performance and optimization path considerations in that approach.
-* TypedArrays are homogenous in their member elements, as are strings. However, other types of iterables may yield any variety of types. While it is most common for iterables to always yield the same type of value, they are not required to do so. This also makes it difficult to optimize for the general case.
 

@@ -74,40 +74,6 @@ contributors: James M Snell
         </emu-note>
       </emu-clause>
 
-      <emu-clause id="sec-typedarraysubsequencefromiterable" type="abstract operation">
-        <h1>
-          TypedArraySubsequenceFromIterable (
-            _haystack_: a TypedArray,
-            _needle_: an ECMAScript language value,
-          ): either a normal completion containing either a List of Numbers, a List of BigInts, or ~not-found~, or a throw completion
-        </h1>
-        <dl class="header">
-          <dt>description</dt>
-          <dd>It produces a List of element values compatible with _haystack_ from _needle_ by iterating _needle_ via the iterator protocol. If _needle_ is not an iterable Object, or is a String, a *TypeError* is thrown. If any yielded element is not the expected type for _haystack_, ~not-found~ is returned.</dd>
-        </dl>
-        <emu-alg>
-          1. If _needle_ is not an Object, throw a *TypeError* exception.
-          1. Let _iteratorMethod_ be ? GetMethod(_needle_, @@iterator).
-          1. If _iteratorMethod_ is *undefined*, throw a *TypeError* exception.
-          1. Let _values_ be ? IteratorToList(? GetIteratorFromMethod(_needle_, _iteratorMethod_)).
-          1. Let _elementType_ be TypedArrayElementType(_haystack_).
-          1. Let _result_ be a new empty List.
-          1. For each element _v_ of _values_, do
-            1. If IsBigIntElementType(_elementType_) is *true* and _v_ is not a BigInt, or if IsBigIntElementType(_elementType_) is *false* and _v_ is not a Number, return ~not-found~.
-            1. Append _v_ to _result_.
-          1. Return _result_.
-        </emu-alg>
-        <emu-note>
-          <p>When the iterable yields no elements, the result is an empty List. Callers treat an empty needle as matching at the current position, consistent with `String.prototype.indexOf("")`.</p>
-        </emu-note>
-        <emu-note>
-          <p>If the iterable yields values of the wrong type (e.g., BigInts when the haystack is a non-BigInt TypedArray, or Numbers when it is a BigInt TypedArray), ~not-found~ is returned rather than throwing. Such values can never SameValueZero-match any element of the haystack, so returning ~not-found~ (which callers interpret as *-1*<sub>𝔽</sub>) is the correct result without the cost of performing the search.</p>
-        </emu-note>
-        <emu-note type="editor">
-          <p>The acceptance of iterable objects as needles is intended to improve ergonomics (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/1">issue #1</a>). String primitives are not Objects and so fall through to the *TypeError* in the first step. Non-iterable objects and non-String primitives also throw to avoid silent misuse (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/7">issue #7</a>).</p>
-        </emu-note>
-      </emu-clause>
-
       <emu-clause id="sec-typedarraysearchsubsequence" type="abstract operation">
         <h1>
           TypedArraySearchSubsequence (
@@ -173,10 +139,8 @@ contributors: James M Snell
         <emu-alg>
           1. Let _typedArray_ be the *this* value.
           1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
-          1. If _needle_ is an Object that has a [[TypedArrayName]] internal slot, then
-            1. Let _needleList_ be ? TypedArraySubsequenceFromTypedArray(_typedArray_, _needle_).
-          1. Else,
-            1. Let _needleList_ be ? TypedArraySubsequenceFromIterable(_typedArray_, _needle_).
+          1. If _needle_ is not an Object that has a [[TypedArrayName]] internal slot, throw a *TypeError* exception.
+          1. Let _needleList_ be ? TypedArraySubsequenceFromTypedArray(_typedArray_, _needle_).
           1. If _needleList_ is ~not-found~, return *-1*<sub>𝔽</sub>.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
           1. If _haystackLength_ is 0 and _needleList_ is not empty, return *-1*<sub>𝔽</sub>.
@@ -185,9 +149,6 @@ contributors: James M Snell
           1. Return TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~first~, _startFrom_).
         </emu-alg>
         <p>This method is not generic. The *this* value must be an object with a [[TypedArrayName]] internal slot.</p>
-        <emu-note>
-          <p>The needle is collected before the _position_ argument is checked. When _needle_ is not a TypedArray, this means observable side effects from the needle's iterator (such as calls to `next()`) occur before any error from an invalid _position_. The same evaluation order applies to `searchLast`.</p>
-        </emu-note>
       </emu-clause>
 
       <emu-clause id="sec-%typedarray%.prototype.searchlast">
@@ -196,10 +157,8 @@ contributors: James M Snell
         <emu-alg>
           1. Let _typedArray_ be the *this* value.
           1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
-          1. If _needle_ is an Object that has a [[TypedArrayName]] internal slot, then
-            1. Let _needleList_ be ? TypedArraySubsequenceFromTypedArray(_typedArray_, _needle_).
-          1. Else,
-            1. Let _needleList_ be ? TypedArraySubsequenceFromIterable(_typedArray_, _needle_).
+          1. If _needle_ is not an Object that has a [[TypedArrayName]] internal slot, throw a *TypeError* exception.
+          1. Let _needleList_ be ? TypedArraySubsequenceFromTypedArray(_typedArray_, _needle_).
           1. If _needleList_ is ~not-found~, return *-1*<sub>𝔽</sub>.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
           1. If _haystackLength_ is 0, then
