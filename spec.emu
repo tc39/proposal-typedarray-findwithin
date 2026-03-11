@@ -49,6 +49,7 @@ contributors: James M Snell
           <dd>It produces a List of element values by reading directly from _needle_'s underlying buffer. If _haystack_ and _needle_ have incompatible content types (Number vs BigInt), ~not-found~ is returned.</dd>
         </dl>
         <emu-alg>
+          1. Assert: _haystack_ is an Object that has a [[TypedArrayName]] internal slot.
           1. Let _needleRecord_ be MakeTypedArrayWithBufferWitnessRecord(_needle_, ~seq-cst~).
           1. If IsTypedArrayOutOfBounds(_needleRecord_) is *true*, throw a *TypeError* exception.
           1. Let _needleLength_ be TypedArrayLength(_needleRecord_).
@@ -143,7 +144,6 @@ contributors: James M Snell
           1. Let _needleList_ be ? TypedArraySubsequenceFromTypedArray(_typedArray_, _needle_).
           1. If _needleList_ is ~not-found~, return *-1*<sub>𝔽</sub>.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
-          1. If _haystackLength_ is 0 and _needleList_ is not empty, return *-1*<sub>𝔽</sub>.
           1. Let _start_ be ? ValidateIntegralNumber(_position_, 0).
           1. Let _startFrom_ be the result of clamping _start_ between 0 and _haystackLength_.
           1. Return TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~first~, _startFrom_).

@@ -85,6 +85,3 @@ f64b.indexOfSequence(new Float32Array([42]));    // 2
 ```
 
 This is not specific to this proposal — it is an inherent property of IEEE 754 floating-point arithmetic and applies equally to any cross-type element comparison.
-
-
-
