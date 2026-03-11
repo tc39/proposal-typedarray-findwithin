@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: TypedArray.prototype.search / searchLast / contains
+title: TypedArray.prototype.indexOfSequence / lastIndexOfSequence
 stage: 1
 contributors: James M Snell
 </pre>
@@ -32,65 +32,46 @@ contributors: James M Snell
         <emu-alg>
           1. If _value_ is *undefined*, return _default_.
           1. If _value_ is not a Number, throw a *TypeError* exception.
-          1. If _value_ is *NaN*, throw a *RangeError* exception.
-          1. If truncate(ℝ(_value_)) is not ℝ(_value_), throw a *RangeError* exception.
+          1. If _value_ is not an integral Number, throw a *RangeError* exception.
           1. Return ℝ(_value_).
         </emu-alg>
       </emu-clause>
 
-      <emu-clause id="sec-sequencesamevaluezeroequal" type="abstract operation">
+      <emu-clause id="sec-typedarraysubsequencefromtypedarray" type="abstract operation">
         <h1>
-          SequenceSameValueZeroEqual (
-            _a_: either a List of Numbers or a List of BigInts,
-            _b_: either a List of Numbers or a List of BigInts,
-          ): a Boolean
-        </h1>
-        <dl class="header">
-          <dt>description</dt>
-          <dd>It determines whether two Lists have the same length and element-wise equal values according to the SameValueZero algorithm.</dd>
-        </dl>
-        <emu-alg>
-          1. Let _aLength_ be the number of elements in _a_.
-          1. Let _bLength_ be the number of elements in _b_.
-          1. If _aLength_ is not _bLength_, return *false*.
-          1. Let _i_ be 0.
-          1. Repeat, while _i_ &lt; _aLength_,
-            1. If SameValueZero(_a_[_i_], _b_[_i_]) is *false*, return *false*.
-            1. Set _i_ to _i_ + 1.
-          1. Return *true*.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-tocompatibletypedarrayelementlist" type="abstract operation">
-        <h1>
-          ToCompatibleTypedArrayElementList (
-            _typedArray_: a TypedArray,
-            _needle_: an ECMAScript language value,
+          TypedArraySubsequenceFromTypedArray (
+            _haystack_: a TypedArray,
+            _needle_: a TypedArray,
           ): either a normal completion containing either a List of Numbers, a List of BigInts, or ~not-found~, or a throw completion
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It produces a List of element values compatible with _typedArray_ from _needle_. If _needle_ is an iterable Object, its elements are collected and validated against the element type of _typedArray_. If any element is not the expected type, ~not-found~ is returned. Non-Object values (including Strings, which would otherwise be boxed into iterable String objects) and non-iterable Objects throw a *TypeError*.</dd>
+          <dd>It produces a List of element values by reading directly from _needle_'s underlying buffer. If _haystack_ and _needle_ have incompatible content types (Number vs BigInt), ~not-found~ is returned.</dd>
         </dl>
         <emu-alg>
-          1. If _needle_ is not an Object, throw a *TypeError* exception.
-          1. Let _iteratorMethod_ be ? GetMethod(_needle_, @@iterator).
-          1. If _iteratorMethod_ is *undefined*, throw a *TypeError* exception.
-          1. Let _values_ be ? IteratorToList(? GetIteratorFromMethod(_needle_, _iteratorMethod_)).
-          1. Let _elementType_ be TypedArrayElementType(_typedArray_).
+          1. Assert: _haystack_ is an Object that has a [[TypedArrayName]] internal slot.
+          1. Let _needleRecord_ be MakeTypedArrayWithBufferWitnessRecord(_needle_, ~seq-cst~).
+          1. If IsTypedArrayOutOfBounds(_needleRecord_) is *true*, throw a *TypeError* exception.
+          1. Let _needleLength_ be TypedArrayLength(_needleRecord_).
+          1. If _haystack_.[[ContentType]] is not _needle_.[[ContentType]], return ~not-found~.
+          1. Let _needleBuffer_ be _needle_.[[ViewedArrayBuffer]].
+          1. Let _needleType_ be TypedArrayElementType(_needle_).
+          1. Let _needleElementSize_ be TypedArrayElementSize(_needle_).
+          1. Let _needleByteOffset_ be _needle_.[[ByteOffset]].
           1. Let _result_ be a new empty List.
-          1. For each element _v_ of _values_, do
-            1. If IsBigIntElementType(_elementType_) is *true* and _v_ is not a BigInt, or if IsBigIntElementType(_elementType_) is *false* and _v_ is not a Number, return ~not-found~.
-            1. Append _v_ to _result_.
+          1. Let _k_ be 0.
+          1. Repeat, while _k_ &lt; _needleLength_,
+            1. Let _byteIndex_ be (_k_ × _needleElementSize_) + _needleByteOffset_.
+            1. Let _value_ be GetValueFromBuffer(_needleBuffer_, _byteIndex_, _needleType_, *true*, ~unordered~).
+            1. Append _value_ to _result_.
+            1. Set _k_ to _k_ + 1.
           1. Return _result_.
         </emu-alg>
         <emu-note>
-          <p>All TypedArray needles (whether same-type or different-type) are iterated via their @@iterator method. This ensures that the resulting List is a snapshot of the needle's elements at the time of the call, which is necessary for correctness when the needle is backed by a SharedArrayBuffer (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/8">issue #8</a>).</p>
-          <p>If the iterable yields values of the wrong type (e.g., BigInts when the haystack is a non-BigInt TypedArray, or Numbers when it is a BigInt TypedArray), ~not-found~ is returned rather than throwing. Such values can never SameValueZero-match any element of the haystack, so returning ~not-found~ (which callers interpret as *-1*<sub>𝔽</sub>) is the correct result without the cost of performing the search. Alternatively we could
-          throw a TypeError in these cases.</p>
+          <p>This operation reads the needle's elements directly from its underlying buffer without invoking user code. The @@iterator method of _needle_ is not called. This is consistent with how %TypedArray%.prototype.set handles TypedArray sources via SetTypedArrayFromTypedArray.</p>
         </emu-note>
-        <emu-note type="editor">
-          <p>The acceptance of iterable objects as needles is intended to improve ergonomics (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/1">issue #1</a>). String primitives are not Objects and so fall through to the *TypeError* in the first step. Non-iterable objects and non-String primitives also throw to avoid silent misuse (see <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/7">issue #7</a>).</p>
+        <emu-note>
+          <p>When _needle_ is backed by a SharedArrayBuffer, another agent may modify the needle's elements during the read. Each element is read individually via GetValueFromBuffer with ~unordered~ ordering. Users who need stronger guarantees must synchronize access externally. See <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/8">issue #8</a> for discussion.</p>
         </emu-note>
       </emu-clause>
 
@@ -113,14 +94,39 @@ contributors: James M Snell
           1. If _needleLength_ is 0, return 𝔽(_position_).
           1. If _direction_ is ~first~, then
             1. If _position_ + _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-            1. [id="step-search-first"] Return the smallest integer _k_ such that _k_ ≥ _position_ and SequenceSameValueZeroEqual(the List of elements of _typedArray_ from index _k_ to _k_ + _needleLength_ - 1, _needle_) is *true*, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+            1. Let _k_ be _position_.
+            1. Let _limit_ be _haystackLength_ - _needleLength_.
+            1. Repeat, while _k_ ≤ _limit_,
+              1. Let _matched_ be *true*.
+              1. Let _j_ be 0.
+              1. Repeat, while _j_ &lt; _needleLength_ and _matched_ is *true*,
+                1. Let _Pk_ be ! ToString(𝔽(_k_ + _j_)).
+                1. Let _haystackValue_ be ! Get(_typedArray_, _Pk_).
+                1. If SameValueZero(_haystackValue_, _needle_[_j_]) is *false*, set _matched_ to *false*.
+                1. Set _j_ to _j_ + 1.
+              1. If _matched_ is *true*, return 𝔽(_k_).
+              1. Set _k_ to _k_ + 1.
+            1. Return *-1*<sub>𝔽</sub>.
           1. Else,
             1. If _needleLength_ &gt; _haystackLength_, return *-1*<sub>𝔽</sub>.
-            1. [id="step-search-last"] Return the largest integer _k_ such that _k_ ≤ _position_ and _k_ + _needleLength_ ≤ _haystackLength_ and SequenceSameValueZeroEqual(the List of elements of _typedArray_ from index _k_ to _k_ + _needleLength_ - 1, _needle_) is *true*, or *-1*<sub>𝔽</sub> if no such _k_ exists.
+            1. Let _k_ be min(_position_, _haystackLength_ - _needleLength_).
+            1. Repeat, while _k_ ≥ 0,
+              1. Let _matched_ be *true*.
+              1. Let _j_ be 0.
+              1. Repeat, while _j_ &lt; _needleLength_ and _matched_ is *true*,
+                1. Let _Pk_ be ! ToString(𝔽(_k_ + _j_)).
+                1. Let _haystackValue_ be ! Get(_typedArray_, _Pk_).
+                1. If SameValueZero(_haystackValue_, _needle_[_j_]) is *false*, set _matched_ to *false*.
+                1. Set _j_ to _j_ + 1.
+              1. If _matched_ is *true*, return 𝔽(_k_).
+              1. Set _k_ to _k_ - 1.
+            1. Return *-1*<sub>𝔽</sub>.
         </emu-alg>
         <emu-note>
-          <p>The _needle_ is produced by ToCompatibleTypedArrayElementList, which validates that element values are the correct type for _typedArray_ and are a snapshot that cannot be modified during the search. The elements of _typedArray_ (the haystack) are not snapshotted, consistent with how %TypedArray%.prototype.indexOf and %TypedArray%.prototype.lastIndexOf scan the haystack directly. When _typedArray_ is backed by a SharedArrayBuffer, another agent may modify elements of _typedArray_ during the search.</p>
-          <p>Implementations may use any technique to search for the subsequence, such as naive search, Boyer-Moore, or other matching algorithms, provided the observable result is correct.</p>
+          <p>The elements of _typedArray_ (the haystack) are not snapshotted, consistent with how %TypedArray%.prototype.indexOf and %TypedArray%.prototype.lastIndexOf scan the haystack directly. When _typedArray_ is backed by a SharedArrayBuffer, another agent may modify elements of _typedArray_ during the search.</p>
+        </emu-note>
+        <emu-note type="editor">
+          <p>The algorithm above describes a naive linear search for clarity. Implementations may use any technique to search for the subsequence, such as Boyer-Moore, two-way, or other matching algorithms, provided the observable result is equivalent.</p>
         </emu-note>
       </emu-clause>
     </emu-clause>
@@ -128,54 +134,41 @@ contributors: James M Snell
     <emu-clause id="sec-properties-of-the-%typedarrayprototype%-object">
       <h1>Properties of the %TypedArray% Prototype Object</h1>
 
-      <emu-clause id="sec-%typedarray%.prototype.search">
-        <h1>%TypedArray%.prototype.search ( _needle_ [ , _position_ ] )</h1>
+      <emu-clause id="sec-%typedarray%.prototype.indexofsequence">
+        <h1>%TypedArray%.prototype.indexOfSequence ( _needle_ [ , _position_ ] )</h1>
         <p>This method searches for the first occurrence of the subsequence _needle_ within this TypedArray, starting the search at index _position_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _typedArray_ be the *this* value.
           1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
-          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_typedArray_, _needle_).
+          1. If _needle_ is not an Object that has a [[TypedArrayName]] internal slot, throw a *TypeError* exception.
+          1. Let _needleList_ be ? TypedArraySubsequenceFromTypedArray(_typedArray_, _needle_).
           1. If _needleList_ is ~not-found~, return *-1*<sub>𝔽</sub>.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
           1. Let _start_ be ? ValidateIntegralNumber(_position_, 0).
           1. Let _startFrom_ be the result of clamping _start_ between 0 and _haystackLength_.
           1. Return TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~first~, _startFrom_).
         </emu-alg>
+        <p>This method is not generic. The *this* value must be an object with a [[TypedArrayName]] internal slot.</p>
       </emu-clause>
 
-      <emu-clause id="sec-%typedarray%.prototype.searchlast">
-        <h1>%TypedArray%.prototype.searchLast ( _needle_ [ , _position_ ] )</h1>
+      <emu-clause id="sec-%typedarray%.prototype.lastindexofsequence">
+        <h1>%TypedArray%.prototype.lastIndexOfSequence ( _needle_ [ , _position_ ] )</h1>
         <p>This method searches for the last occurrence of the subsequence _needle_ within this TypedArray whose starting index is at or before _position_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _typedArray_ be the *this* value.
           1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
-          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_typedArray_, _needle_).
+          1. If _needle_ is not an Object that has a [[TypedArrayName]] internal slot, throw a *TypeError* exception.
+          1. Let _needleList_ be ? TypedArraySubsequenceFromTypedArray(_typedArray_, _needle_).
           1. If _needleList_ is ~not-found~, return *-1*<sub>𝔽</sub>.
           1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
+          1. If _haystackLength_ is 0, then
+            1. If _needleList_ is not empty, return *-1*<sub>𝔽</sub>.
+            1. Return *+0*<sub>𝔽</sub>.
           1. Let _start_ be ? ValidateIntegralNumber(_position_, _haystackLength_ - 1).
           1. Let _startFrom_ be the result of clamping _start_ between 0 and _haystackLength_ - 1.
           1. Return TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~last~, _startFrom_).
         </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-%typedarray%.prototype.contains">
-        <h1>%TypedArray%.prototype.contains ( _needle_ [ , _position_ ] )</h1>
-        <p>This method determines whether the subsequence _needle_ exists within this TypedArray, starting the search at index _position_. It performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _typedArray_ be the *this* value.
-          1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
-          1. Let _needleList_ be ? ToCompatibleTypedArrayElementList(_typedArray_, _needle_).
-          1. If _needleList_ is ~not-found~, return *false*.
-          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
-          1. Let _start_ be ? ValidateIntegralNumber(_position_, 0).
-          1. Let _startFrom_ be the result of clamping _start_ between 0 and _haystackLength_.
-          1. Let _index_ be TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~first~, _startFrom_).
-          1. If _index_ is *-1*<sub>𝔽</sub>, return *false*.
-          1. Return *true*.
-        </emu-alg>
-        <emu-note type="editor">
-          <p>Whether `contains` should exist as a separate method or whether users should simply use `search(_needle_) !== -1` is an open question. See <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/6">issue #6</a> for discussion.</p>
-        </emu-note>
+        <p>This method is not generic. The *this* value must be an object with a [[TypedArrayName]] internal slot.</p>
       </emu-clause>
     </emu-clause>
   </emu-clause>
