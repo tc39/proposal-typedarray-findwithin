@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: TypedArray.prototype.search / searchLast / contains
+title: TypedArray.prototype.search / searchLast
 stage: 1
 contributors: James M Snell
 </pre>
@@ -186,7 +186,7 @@ contributors: James M Snell
         </emu-alg>
         <p>This method is not generic. The *this* value must be an object with a [[TypedArrayName]] internal slot.</p>
         <emu-note>
-          <p>The needle is collected before the _position_ argument is checked. When _needle_ is not a TypedArray, this means observable side effects from the needle's iterator (such as calls to `next()`) occur before any error from an invalid _position_. The same evaluation order applies to `searchLast` and `contains`.</p>
+          <p>The needle is collected before the _position_ argument is checked. When _needle_ is not a TypedArray, this means observable side effects from the needle's iterator (such as calls to `next()`) occur before any error from an invalid _position_. The same evaluation order applies to `searchLast`.</p>
         </emu-note>
       </emu-clause>
 
@@ -210,31 +210,6 @@ contributors: James M Snell
           1. Return TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~last~, _startFrom_).
         </emu-alg>
         <p>This method is not generic. The *this* value must be an object with a [[TypedArrayName]] internal slot.</p>
-      </emu-clause>
-
-      <emu-clause id="sec-%typedarray%.prototype.contains">
-        <h1>%TypedArray%.prototype.contains ( _needle_ [ , _position_ ] )</h1>
-        <p>This method determines whether the subsequence _needle_ exists within this TypedArray, starting the search at index _position_. It performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _typedArray_ be the *this* value.
-          1. Let _taRecord_ be ? ValidateTypedArray(_typedArray_, ~seq-cst~).
-          1. If _needle_ is an Object that has a [[TypedArrayName]] internal slot, then
-            1. Let _needleList_ be ? TypedArraySubsequenceFromTypedArray(_typedArray_, _needle_).
-          1. Else,
-            1. Let _needleList_ be ? TypedArraySubsequenceFromIterable(_typedArray_, _needle_).
-          1. If _needleList_ is ~not-found~, return *false*.
-          1. Let _haystackLength_ be TypedArrayLength(_taRecord_).
-          1. If _haystackLength_ is 0 and _needleList_ is not empty, return *false*.
-          1. Let _start_ be ? ValidateIntegralNumber(_position_, 0).
-          1. Let _startFrom_ be the result of clamping _start_ between 0 and _haystackLength_.
-          1. Let _index_ be TypedArraySearchSubsequence(_typedArray_, _haystackLength_, _needleList_, ~first~, _startFrom_).
-          1. If _index_ is *-1*<sub>𝔽</sub>, return *false*.
-          1. Return *true*.
-        </emu-alg>
-        <p>This method is not generic. The *this* value must be an object with a [[TypedArrayName]] internal slot.</p>
-        <emu-note type="editor">
-          <p>Whether `contains` should exist as a separate method or whether users should simply use `search(_needle_) !== -1` is an open question. See <a href="https://github.com/tc39/proposal-typedarray-findwithin/issues/6">issue #6</a> for discussion.</p>
-        </emu-note>
       </emu-clause>
     </emu-clause>
   </emu-clause>

@@ -14,7 +14,7 @@ Today with TypedArrays, it is possible to get the index of a specific single ele
 function findSubsequence(haystack, needle) {
   if (needle.length === 0) return 0;
   if (needle.length > haystack.length) return -1;
-  
+
   outer: for (let i = 0; i <= haystack.length - needle.length; i++) {
     for (let j = 0; j < needle.length; j++) {
       if (haystack[i + j] !== needle[j]) continue outer;
@@ -33,7 +33,7 @@ console.log(findSubsequence(int16, new Int16Array([3, 4]))); // 2
 
 ## The Proposal
 
-The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in three forms: `search` returns the starting index of the first occurrence, `searchLast` returns the starting index of the last occurrence, and `contains` returns a simple boolean true/false if the subsequence exists. All three methods accept an optional `position` parameter to control where the search begins. For `search` and `contains`, only matches starting at `position` or later are considered. For `searchLast`, only matches starting at `position` or earlier are considered.
+The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in three forms: `search` returns the starting index of the first occurrence, `searchLast` returns the starting index of the last occurrence. Bot methods accept an optional `position` parameter to control where the search begins. For `search` only matches starting at `position` or later are considered. For `searchLast`, only matches starting at `position` or earlier are considered.
 
 ```js
 const enc = new TextEncoder();
@@ -43,8 +43,6 @@ console.log(u8.search(enc.encode('TC39'))); // 6
 console.log(u8.search(enc.encode('TC39'), 7)); // 17
 console.log(u8.searchLast(enc.encode('TC39'))); // 17
 console.log(u8.searchLast(enc.encode('TC39'), 16)); // 6
-console.log(u8.contains(enc.encode('TC39'))); // true
-console.log(u8.contains(enc.encode('TC39'), 18)); // false
 ```
 
 Exactly how to implement the subsequence search algorithm is intended to be left as an implementation specific detail.
