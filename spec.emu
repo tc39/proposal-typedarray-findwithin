@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: TypedArray.prototype.search / searchLast
+title: TypedArray.prototype.indexOfSequence / lastIndexOfSequence
 stage: 1
 contributors: James M Snell
 </pre>
@@ -133,8 +133,8 @@ contributors: James M Snell
     <emu-clause id="sec-properties-of-the-%typedarrayprototype%-object">
       <h1>Properties of the %TypedArray% Prototype Object</h1>
 
-      <emu-clause id="sec-%typedarray%.prototype.search">
-        <h1>%TypedArray%.prototype.search ( _needle_ [ , _position_ ] )</h1>
+      <emu-clause id="sec-%typedarray%.prototype.indexofsequence">
+        <h1>%TypedArray%.prototype.indexOfSequence ( _needle_ [ , _position_ ] )</h1>
         <p>This method searches for the first occurrence of the subsequence _needle_ within this TypedArray, starting the search at index _position_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _typedArray_ be the *this* value.
@@ -151,8 +151,8 @@ contributors: James M Snell
         <p>This method is not generic. The *this* value must be an object with a [[TypedArrayName]] internal slot.</p>
       </emu-clause>
 
-      <emu-clause id="sec-%typedarray%.prototype.searchlast">
-        <h1>%TypedArray%.prototype.searchLast ( _needle_ [ , _position_ ] )</h1>
+      <emu-clause id="sec-%typedarray%.prototype.lastindexofsequence">
+        <h1>%TypedArray%.prototype.lastIndexOfSequence ( _needle_ [ , _position_ ] )</h1>
         <p>This method searches for the last occurrence of the subsequence _needle_ within this TypedArray whose starting index is at or before _position_. It performs the following steps when called:</p>
         <emu-alg>
           1. Let _typedArray_ be the *this* value.

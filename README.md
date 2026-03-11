@@ -33,16 +33,16 @@ console.log(findSubsequence(int16, new Int16Array([3, 4]))); // 2
 
 ## The Proposal
 
-The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences in three forms: `search` returns the starting index of the first occurrence, `searchLast` returns the starting index of the last occurrence. Bot methods accept an optional `position` parameter to control where the search begins. For `search` only matches starting at `position` or later are considered. For `searchLast`, only matches starting at `position` or earlier are considered.
+The proposal is to add an API to `TypedArray.prototype` to enable optimized searching for subsequences: `indexOfSequence` returns the starting index of the first occurrence, `lastIndexOfSequence` returns the starting index of the last occurrence. Both methods accept an optional `position` parameter to control where the search begins. For `indexOfSequence` only matches starting at `position` or later are considered. For `lastIndexOfSequence`, only matches starting at `position` or earlier are considered.
 
 ```js
 const enc = new TextEncoder();
 const u8 = enc.encode('Hello TC39, Hello TC39');
 
-console.log(u8.search(enc.encode('TC39'))); // 6
-console.log(u8.search(enc.encode('TC39'), 7)); // 17
-console.log(u8.searchLast(enc.encode('TC39'))); // 17
-console.log(u8.searchLast(enc.encode('TC39'), 16)); // 6
+console.log(u8.indexOfSequence(enc.encode('TC39'))); // 6
+console.log(u8.indexOfSequence(enc.encode('TC39'), 7)); // 17
+console.log(u8.lastIndexOfSequence(enc.encode('TC39'))); // 17
+console.log(u8.lastIndexOfSequence(enc.encode('TC39'), 16)); // 6
 ```
 
 Exactly how to implement the subsequence search algorithm is intended to be left as an implementation specific detail.
@@ -57,15 +57,15 @@ Any other value — throws a `TypeError`.
 const u8 = new Uint8Array([1, 2, 3, 4, 5]);
 
 // Same-type TypedArray
-u8.search(new Uint8Array([3, 4])); // 2
+u8.indexOfSequence(new Uint8Array([3, 4])); // 2
 
 // Different-type TypedArray (read from buffer)
-u8.search(new Int16Array([3, 4])); // 2
+u8.indexOfSequence(new Int16Array([3, 4])); // 2
 
 // Non-TypedArray throws
-u8.search([3, 4]); // TypeError
-u8.search('hello'); // TypeError
-u8.search(42); // TypeError
+u8.indexOfSequence([3, 4]); // TypeError
+u8.indexOfSequence('hello'); // TypeError
+u8.indexOfSequence(42); // TypeError
 ```
 
 ### Cross-type floating-point precision
@@ -76,12 +76,12 @@ When a needle TypedArray has a narrower floating-point type than the haystack, p
 const f64 = new Float64Array([0.3]);
 
 // Float32 cannot represent 0.3 exactly — it rounds to ≈0.30000001192092896
-f64.search(new Float32Array([0.3]));  // -1 (no match)
+f64.indexOfSequence(new Float32Array([0.3]));  // -1 (no match)
 
 // Values that are exact in Float32 (integers, powers of two, etc.) work fine
 const f64b = new Float64Array([0.25, 0.5, 42]);
-f64b.search(new Float32Array([0.25]));  // 0
-f64b.search(new Float32Array([42]));    // 2
+f64b.indexOfSequence(new Float32Array([0.25]));  // 0
+f64b.indexOfSequence(new Float32Array([42]));    // 2
 ```
 
 This is not specific to this proposal — it is an inherent property of IEEE 754 floating-point arithmetic and applies equally to any cross-type element comparison.
